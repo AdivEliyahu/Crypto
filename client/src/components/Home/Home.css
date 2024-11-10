@@ -1,5 +1,19 @@
-.isomorphicGraphs{
-    height: 30vh;
-    width: 50vh; 
-    
+/* General container styling */
+.isomorphicGraphs {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 20px 0;
+    padding: 10px;
+}
+
+.isomorphicGraphs p {
+    font-size: 1.2em;
+    color: #666;
+    text-align: center;
+}
+
+/* Add spacing around the ProverGraph component */
+.proverGraphContainer {
+    margin-top: 20px;
 }
