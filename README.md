@@ -21,6 +21,7 @@ Before running the project, ensure you have the following installed:
    cd server
    ```
 2. Create and activate the virtual environment:
+   * python -m venv venv
    * On Windows:
      ```bash
      venv\Scripts\activate
@@ -32,6 +33,10 @@ Before running the project, ensure you have the following installed:
 3. Install the required Python dependencies:
    ```bash
    pip install -r requirements.txt
+   ```
+4. Apply migrations: 
+   ```bash
+   python manage.py migrate
    ```
 4. Run the Django server:
    ```bash
