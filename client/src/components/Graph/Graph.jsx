@@ -3,7 +3,7 @@ import Graph from 'react-vis-network-graph';
 import './Graph.css';
 
 export default function GraphView({ nodes = [], edges = [] }) { 
-    // Format nodes and edges
+
     const formattedNodes = nodes.map(id => ({
         id: String(id), 
         label: `Node ${id}`
@@ -28,11 +28,8 @@ export default function GraphView({ nodes = [], edges = [] }) {
             },
             shape: "circle",
         },
-        shadow: true,
-        smooth: true,
-    };
 
-   
+    };
 
     return ( 
         <div className='graph'>
