@@ -1,6 +1,6 @@
-# Project Name
+# Project 
+   Course Project
 
-This project consists of a server (Django) and a client (React) that work together to provide a full-stack web application.
 
 ## Prerequisites
 
@@ -66,5 +66,4 @@ Once both the server and client are running, the Django API should be accessible
 
 ## Additional Notes
 
-- Make sure you have set up the database for Django (e.g., using `python manage.py migrate`).
 - You can stop the servers by pressing `Ctrl+C` in each terminal window.

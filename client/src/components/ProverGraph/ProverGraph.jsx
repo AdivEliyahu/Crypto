@@ -17,7 +17,6 @@ const ProverGraph = (props) => {
     const nav = useNavigate();
 
     const PIfunc = props['PIfunc'];
-    const edges1 = props['edges1'];
     const nodes1 = props['nodes1']
 
     useEffect(() => {
@@ -39,15 +38,9 @@ const ProverGraph = (props) => {
     }, [correct]);
 
 
-    function testNode() {
+    function validateEdges() {
         const node = PIfunc[currentNode];
-        const nodeEdges = edges1.filter(edge => edge[0] === node);
-
-        const normalizedNodeEdges = nodeEdges.length === 0
-            ? ['0 undefined'] 
-            : nodeEdges.map(edge => edge[0] === node ? `${edge[0]} ${edge[1]}` : "NULL")
-                        .filter(pair => pair !== "NULL"); 
-
+        
         const inputEdges = userInput.split(',').map(edge => edge.trim());
 
         const normalizedInputEdges = inputEdges.length === 0
@@ -57,16 +50,24 @@ const ProverGraph = (props) => {
                 return `${from} ${to}`;
             });
 
-        
-        const isCorrect = normalizedNodeEdges.length === normalizedInputEdges.length &&
-                          normalizedNodeEdges.every(edge => normalizedInputEdges.includes(edge));
 
-        setCorrect(isCorrect); 
+        axios.post('http://localhost:8000/check_edges', {
+            node: node,
+            normalizedInputEdges: normalizedInputEdges
+        })
+        .then((response) => {
+            const isCorrect = response.data.message;
+            setCorrect(isCorrect); 
+    
+            setCounter(counter + 1);
+            setUserInput("");
+    
+            handleNextNode(isCorrect);
+        })
+        .catch((error) => {
+            console.log("Error checking edges:", error);
+        });
 
-        setCounter(counter + 1);
-        setUserInput("");
-
-        handleNextNode(isCorrect);
     }
 
     const handleNextNode = (isCorrect) => {
@@ -109,7 +110,7 @@ const ProverGraph = (props) => {
             />
 
 
-            {counter < randNodes.length && <button className='nextNodeBtn' onClick={testNode}>Next Node</button>}    
+            {counter < randNodes.length && <button className='nextNodeBtn' onClick={validateEdges}>Next Node</button>}    
 
             {hadIncorrectAnswer && counter >= randNodes.length && <p className="error">Some nodes were incorrect. Please try again later.</p>}
             
