@@ -1,19 +1,32 @@
-/* General container styling */
 .isomorphicGraphs {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    margin: 20px 0;
-    padding: 10px;
+    margin: 40px 0;
+    padding: 20px;
+    gap: 40px; /* Add space between the two components */
 }
 
 .isomorphicGraphs p {
-    font-size: 1.2em;
+    font-size: 1.3em;
     color: #666;
     text-align: center;
 }
 
-/* Add spacing around the ProverGraph component */
+.IsoGraph .graph {
+    width: 80vw; 
+    height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.IsoGraph .graph:hover {
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    transform: scale(1.02);
+}
+
 .proverGraphContainer {
     margin-top: 20px;
+    flex: 1; /* Allow the prover graph to stretch */
 }

@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate  } from "react-router-dom";
-import './ProverGraph.css'
-
+import { useNavigate } from "react-router-dom";
+import './ProverGraph.css';
+import GraphView from '../Graph/Graph';
 
 const ProverGraph = (props) => {
     const [randNodes, setRandNodes] = useState([]);
     const [userInput, setUserInput] = useState("");
     const [correct, setCorrect] = useState(true);
+    const [hadIncorrectAnswer, setHadIncorrectAnswer] = useState(false);
     const [currentNodeIndex, setCurrentNodeIndex] = useState(0); 
-    const [coutner, setCounter] = useState(0); 
-    const [currentNode, setCurrentNode] = useState(null); 
+    const [counter, setCounter] = useState(0); 
+    const [currentNode, setCurrentNode] = useState(null);
+    const [userEdegs, setUserEdges] = useState([]);
 
     const nav = useNavigate();
 
     const PIfunc = props['PIfunc'];
     const edges1 = props['edges1'];
-
+    const nodes1 = props['nodes1']
 
     useEffect(() => {
         axios.get('http://localhost:8000/get_random_nodes')
@@ -30,56 +32,58 @@ const ProverGraph = (props) => {
     }, []); 
 
 
+    useEffect(() => {
+        if (!correct) {
+            setHadIncorrectAnswer(true);
+        }
+    }, [correct]);
 
 
+    function testNode() {
+        const node = PIfunc[currentNode];
+        const nodeEdges = edges1.filter(edge => edge[0] === node);
 
-function testNode() {
-    
-    const node = PIfunc[currentNode]
-    const nodeEdges = edges1.filter(edge => edge[0] === node);
+        const normalizedNodeEdges = nodeEdges.length === 0
+            ? ['0 undefined'] 
+            : nodeEdges.map(edge => edge[0] === node ? `${edge[0]} ${edge[1]}` : "NULL")
+                        .filter(pair => pair !== "NULL"); 
 
-    const normalizedNodeEdges = nodeEdges.length === 0
-    ? ['0 undefined'] 
-    : nodeEdges.map(edge => edge[0] === node ? `${edge[0]} ${edge[1]}` : "NULL")
-                .filter(pair => pair !== "NULL"); 
-   
-    const inputEdges = userInput.split(',').map(edge => edge.trim());
+        const inputEdges = userInput.split(',').map(edge => edge.trim());
 
+        const normalizedInputEdges = inputEdges.length === 0
+            ? ['0 undefined'] 
+            : inputEdges.map(edge => {
+                const [from, to] = edge.split(' ').map(Number);
+                return `${from} ${to}`;
+            });
 
-    const normalizedInputEdges = inputEdges.length === 0
-    ? ['0 undefined'] 
-    : inputEdges.map(edge => {
-        const [from, to] = edge.split(' ').map(Number);
-        return `${from} ${to}`;
-    });
+        
+        const isCorrect = normalizedNodeEdges.length === normalizedInputEdges.length &&
+                          normalizedNodeEdges.every(edge => normalizedInputEdges.includes(edge));
 
-    if (normalizedNodeEdges.length === normalizedInputEdges.length &&
-        normalizedNodeEdges.every(edge => normalizedInputEdges.includes(edge))) {
-        setUserInput('');
-        console.log("Success");
-        handleNextNode();
-    } else {
-        setUserInput('');
-        console.log("Reject");
-        handleNextNode();
-        setCorrect(false);
+        setCorrect(isCorrect); 
+
+        setCounter(counter + 1);
+        setUserInput("");
+
+        handleNextNode(isCorrect);
     }
-    setCounter(coutner + 1);
-}
 
-
-
-
-
-
-    const handleNextNode = () => {
+    const handleNextNode = (isCorrect) => {
         if (currentNodeIndex < randNodes.length - 1) {
             setCurrentNodeIndex(currentNodeIndex + 1);
             setCurrentNode(randNodes[currentNodeIndex + 1]);
-        }
-        else if(currentNodeIndex === randNodes.length - 1 && correct){
+        } 
+
+        else if (currentNodeIndex === randNodes.length - 1 && isCorrect && !hadIncorrectAnswer) {
             nav('/Success');
         }
+
+        
+        setUserEdges([
+            ...userEdegs, 
+            ...userInput.split(',').map(edge => edge.trim().split(' ').map(Number)) 
+        ]);
     };
 
     return (
@@ -91,7 +95,6 @@ function testNode() {
             ))}
             </>
 
-
             <div className="currentNodePrompt">
                 <h3>Current Node: {currentNode}</h3>
                 <p>Provide the edges for this node.</p>
@@ -100,13 +103,18 @@ function testNode() {
             <input 
                 type='text' 
                 id='userInput'
+                value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 placeholder="Enter edges like 1 2, 1 3..."
             />
 
-            {coutner < randNodes.length && <button className='nextNodeBtn' onClick={testNode}>Next Node</button>}    
 
-            {!correct && coutner >= randNodes.length && <p className="error">Some nodes were incorrect. Please try again later.</p>}
+            {counter < randNodes.length && <button className='nextNodeBtn' onClick={testNode}>Next Node</button>}    
+
+            {hadIncorrectAnswer && counter >= randNodes.length && <p className="error">Some nodes were incorrect. Please try again later.</p>}
+            
+            <GraphView className='userGraph' {...{ nodes: nodes1, edges: userEdegs, numGraph: 1 }} />
+            
         </div>
     );
 }

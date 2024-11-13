@@ -29,3 +29,4 @@ def get_random_nodes(request):
     selected_nodes = random.sample(nodes2, num_nodes_to_select)
     
     return JsonResponse({'randNodes': selected_nodes}); 
+

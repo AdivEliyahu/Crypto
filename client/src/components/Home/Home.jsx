@@ -5,6 +5,7 @@ import ProverGraph from '../ProverGraph/ProverGraph';
 import './Home.css';
 
 const Home = () => { 
+    const [nodes1, setNodes1] = useState([]);
     const [edges1, setEdges1] = useState([]);
     const [nodes2, setNodes2] = useState([]);
     const [edges2, setEdges2] = useState([]);
@@ -16,6 +17,7 @@ const Home = () => {
     useEffect(() => {
         axios.get('http://localhost:8000/get_graphs')
             .then((response) => {
+                setNodes1(response.data["nodes1"]);
                 setEdges1(response.data["edges1"]);
                 setNodes2(response.data["nodes2"]);
                 setEdges2(response.data["edges2"]);
@@ -33,11 +35,11 @@ const Home = () => {
             <div className='isomorphicGraphs'> 
                 {isLoaded ? (
                     <>
-                        <>          
-                            <GraphView {...{ nodes: nodes2, edges: edges2, numGraph: 1 }} />             
-                        </>
+                        <div>          
+                            <GraphView className='IsoGraph' {...{ nodes: nodes2, edges: edges2, numGraph: 2 }} />            
+                        </div>
                         <>
-                            <ProverGraph {...{PIfunc: PIfunc, edges1: edges1}}/>
+                            <ProverGraph {...{PIfunc: PIfunc, edges1: edges1, nodes1: nodes1}}/>
                         </>
                     </>
                 ) : (
