@@ -30,3 +30,7 @@
     margin-top: 20px;
     flex: 1; /* Allow the prover graph to stretch */
 }
+
+.title{ 
+    text-align: center;
+}

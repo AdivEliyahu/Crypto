@@ -6,7 +6,6 @@ import './Home.css';
 
 const Home = () => { 
     const [nodes1, setNodes1] = useState([]);
-    const [edges1, setEdges1] = useState([]);
     const [nodes2, setNodes2] = useState([]);
     const [edges2, setEdges2] = useState([]);
     const [PIfunc, setPIfunc] = useState();
@@ -18,7 +17,6 @@ const Home = () => {
         axios.get('http://localhost:8000/get_graphs')
             .then((response) => {
                 setNodes1(response.data["nodes1"]);
-                setEdges1(response.data["edges1"]);
                 setNodes2(response.data["nodes2"]);
                 setEdges2(response.data["edges2"]);
                 setPIfunc(response.data["f"]);
@@ -31,7 +29,7 @@ const Home = () => {
     
     return (
         <div>
-            
+            <h1 className='title'>Isomorphic Graphs</h1>
             <div className='isomorphicGraphs'> 
                 {isLoaded ? (
                     <>
@@ -39,7 +37,7 @@ const Home = () => {
                             <GraphView className='IsoGraph' {...{ nodes: nodes2, edges: edges2, numGraph: 2 }} />            
                         </div>
                         <>
-                            <ProverGraph {...{PIfunc: PIfunc, edges1: edges1, nodes1: nodes1}}/>
+                            <ProverGraph {...{PIfunc: PIfunc, nodes1: nodes1}}/>
                         </>
                     </>
                 ) : (

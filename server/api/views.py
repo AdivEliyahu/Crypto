@@ -1,11 +1,9 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET,require_POST
-import matplotlib.pyplot as plt
-import networkx as nx
-import numpy as np
 import random
 from django.views.decorators.csrf import csrf_exempt
 import json
+
 # Real Graph
 nodes1 = [1,2,3,4,5,6]
 edges1 = [[1, 2], [1, 3], [5, 4], [4, 1], [5, 2], [3, 2], [2, 6]]
@@ -19,7 +17,7 @@ f = {'A':1, 'B':2, 'C':3, 'D':4,'E':5, 'F':6}
 
 @require_GET
 def get_graphs(request):
-    return JsonResponse({'nodes1':nodes1,'edges1':edges1,
+    return JsonResponse({'nodes1':nodes1,
                         'nodes2':nodes2,'edges2':edges2,  
                         'f':f})
 
