@@ -1,6 +1,6 @@
 import {Routes, Route} from 'react-router-dom' 
-import Home from './components/Home/Home'
-import Success from './components/Result/Success';
+import IsomorphicGraph from './components/FirstTask/IsomorphicGraph/IsomorphicGraph'
+import Success from './components/FirstTask/Result/Success';
 import './App.css'
 
 import { createGlobalStyle } from 'styled-components';
@@ -16,7 +16,7 @@ function App() {
     <div className="App">
       <GlobalStyle />
       <Routes>
-          <Route path='' element={<Home/>}/>
+          <Route path='' element={<IsomorphicGraph/>}/>
           <Route path='Success' element={<Success/>}/>
       </Routes>
     </div>

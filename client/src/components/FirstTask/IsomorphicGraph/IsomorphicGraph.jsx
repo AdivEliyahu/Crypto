@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import GraphView from '../Graph/Graph';
 import ProverGraph from '../ProverGraph/ProverGraph';
-import './Home.css';
+import './IsomorphicGraph.css';
 
-const Home = () => { 
+const IsomorphicGraph = () => { 
     const [nodes1, setNodes1] = useState([]);
     const [nodes2, setNodes2] = useState([]);
     const [edges2, setEdges2] = useState([]);
@@ -51,4 +51,4 @@ const Home = () => {
     );
 }
 
-export default Home;
+export default IsomorphicGraph;
