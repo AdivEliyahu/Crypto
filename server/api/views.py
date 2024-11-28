@@ -4,6 +4,8 @@ import random
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+#~~~~~~~~~~~~~~~~~~TASK 1~~~~~~~~~~~~~~~~~~~~~~#
+
 # Real Graph
 nodes1 = [1,2,3,4,5,6]
 edges1 = [[1, 2], [1, 3], [5, 4], [4, 1], [5, 2], [3, 2], [2, 6]]
@@ -58,3 +60,15 @@ def check_edges(request):
     print(f'[Status] user was right (node: {node}).')
     
     return JsonResponse({'message': True})
+
+
+#~~~~~~~~~~~~~~~~~~TASK 2~~~~~~~~~~~~~~~~~~~~~~#
+
+# move prime and alpha to .env file && gitignore it 
+@require_GET
+def key_exchange_set_up(request): 
+    prime = request.GET.get('prime')
+    alpha = request.GET.get('alpha')
+
+    print(f'prime number is {prime} alpha is {alpha}')
+    return JsonResponse({'message': 'server got the prime and alpha.'})

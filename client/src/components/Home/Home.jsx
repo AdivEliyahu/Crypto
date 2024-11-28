@@ -10,7 +10,6 @@ export default function Home() {
     const nav = useNavigate()
     
     const handleClick = (navTo) => { 
-        console.log(navTo);
         nav(navTo);
     }
 
