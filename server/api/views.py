@@ -64,11 +64,19 @@ def check_edges(request):
 
 #~~~~~~~~~~~~~~~~~~TASK 2~~~~~~~~~~~~~~~~~~~~~~#
 
-# move prime and alpha to .env file && gitignore it 
+# move private_key_bob to .env file & gitignore it 
 @require_GET
 def key_exchange_set_up(request): 
+    import random
     prime = request.GET.get('prime')
     alpha = request.GET.get('alpha')
+    alice_public = request.GET.get('publicKey')
 
-    print(f'prime number is {prime} alpha is {alpha}')
-    return JsonResponse({'message': 'server got the prime and alpha.'})
+    private_key_bob = random.randint(1,prime - 1) 
+    public_key_bob = pow(alpha,private_key_bob) % prime 
+
+    secret = pow(alpha,private_key_bob)
+
+    print(f'prime number is {prime} alpha is {alpha} alice public is {alice_public}')
+    return JsonResponse({'message': 'server got the prime and alpha.',
+                        'bobPublicKey': public_key_bob})

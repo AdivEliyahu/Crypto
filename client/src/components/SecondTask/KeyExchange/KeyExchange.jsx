@@ -4,6 +4,8 @@ export default function KeyExchange() {
   
   const [alpha, setAlpha] = useState(0);
   const [prime, setPrime] = useState(0);
+  const [privateKey, setPrivateKey] = useState(0); // move this maybe to localstorge
+  const [publicKey, setPublicKey] = useState(0);
 
   const [validSetUp, setValidSetUp] = useState(false); 
   const [error, setError] = useState('');
@@ -24,23 +26,31 @@ export default function KeyExchange() {
   };
 
   const publishSetUp = () => { 
+    const privateKeyValue = Math.floor(Math.random() * (prime - 1)) + 1;
+    setPrivateKey(privateKeyValue);
+    const publicKeyValue = Math.pow(alpha, privateKeyValue) % prime;
+    setPublicKey(publicKeyValue);
+    
     axios.get('http://localhost:8000/key_exchange_set_up', {
       params : { 
         prime: prime, 
         alpha : alpha,
+        publicKey: publicKey,
       }
     })
     .then((response) => {
       console.log(response.data["message"]);
+      //here generate secret and save it in localstorage as well
     })
     .catch((error) => {
       console.log("API error:", error);
     })
   };
 
+
   const handleSubmitSetUp = () => {
     if (validPrime() && validAlpha()) {
-      setValidSetUp(true);
+      setValidSetUp(true); // remember useState async maybe move this to the bottom of the handle
       publishSetUp();
     }
     else 
@@ -58,7 +68,7 @@ export default function KeyExchange() {
             {error}
         </div> 
         : 
-        <div> {alpha} and {prime} good</div> }
+        <div> alpha: {alpha} prime: {prime} private key alice {privateKey} public key alice {publicKey} </div> }
     </div>
   )
 }
