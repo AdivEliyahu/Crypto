@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 
 import { prime } from 'bigint-crypto-utils';
-//npm install bigint-crypto-utils
-
+//TASKS: 
+// npm install bigint-crypto-utils
+// save secret in session storage (NOT in local storage) because its cleared every end of session
+// hide the private key
 
 export default function KeyExchange() {
   
@@ -45,7 +47,7 @@ export default function KeyExchange() {
   };
 
   const keyExchange = () => { 
-    const privateKeyValue = Math.floor(Math.random() * (prime - 1)) + 1; // move this to local storage
+    const privateKeyValue = Math.floor(Math.random() * (prime - 1)) + 1; // move this to *session* storage
     const publicKeyValue = Math.pow(alpha, privateKeyValue) % prime;
     //setPublicKey(publicKeyValue); maybe still need that - dont remove
     
