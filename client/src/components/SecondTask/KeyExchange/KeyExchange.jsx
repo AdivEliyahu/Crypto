@@ -1,14 +1,33 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios';
+
+import { prime } from 'bigint-crypto-utils';
+//npm install bigint-crypto-utils
+
+
 export default function KeyExchange() {
   
   const [alpha, setAlpha] = useState(0);
   const [prime, setPrime] = useState(0);
-  const [privateKey, setPrivateKey] = useState(0); // move this maybe to localstorge
-  const [publicKey, setPublicKey] = useState(0);
-
   const [validSetUp, setValidSetUp] = useState(false); 
   const [error, setError] = useState('');
+
+
+  useEffect(() => {
+    (async () => {
+        const generatedPrime = await prime(2048);
+        console.log('Prime is:', generatedPrime);
+        setPrime(generatedPrime);
+    })();
+}, []);
+
+  useEffect(() => {
+      if (prime) {
+          const generatedAlpha = Math.floor(Math.random() * (prime - 3)) + 2;
+          console.log('alpha is: ', generatedAlpha);
+          setAlpha(generatedAlpha);
+      }
+  }, [prime]);
 
   const validPrime = () => { 
     for (let i = 2; i <= prime/2; i++) {
@@ -25,22 +44,24 @@ export default function KeyExchange() {
     return true;
   };
 
-  const publishSetUp = () => { 
-    const privateKeyValue = Math.floor(Math.random() * (prime - 1)) + 1;
-    setPrivateKey(privateKeyValue);
+  const keyExchange = () => { 
+    const privateKeyValue = Math.floor(Math.random() * (prime - 1)) + 1; // move this to local storage
     const publicKeyValue = Math.pow(alpha, privateKeyValue) % prime;
-    setPublicKey(publicKeyValue);
+    //setPublicKey(publicKeyValue); maybe still need that - dont remove
     
     axios.get('http://localhost:8000/key_exchange_set_up', {
       params : { 
         prime: prime, 
         alpha : alpha,
-        publicKey: publicKey,
+        publicKey: publicKeyValue,
       }
     })
     .then((response) => {
       console.log(response.data["message"]);
-      //here generate secret and save it in localstorage as well
+      console.log('Alice private key: ', privateKeyValue);
+
+      const secret = Math.pow(response.data['bobPublicKey'], privateKeyValue) % prime;
+      console.log('Secret is: ', secret);
     })
     .catch((error) => {
       console.log("API error:", error);
@@ -48,10 +69,10 @@ export default function KeyExchange() {
   };
 
 
-  const handleSubmitSetUp = () => {
+  const handleKeyExchange = () => {
     if (validPrime() && validAlpha()) {
       setValidSetUp(true); // remember useState async maybe move this to the bottom of the handle
-      publishSetUp();
+      keyExchange();
     }
     else 
       setError('no good');
@@ -64,11 +85,11 @@ export default function KeyExchange() {
         <div className=''>
             <input type='number' onChange={(event) => setPrime(event.target.value)} placeholder='Choose a large prime p'/>
             <input type='number' onChange={(event) => setAlpha(event.target.value)} placeholder='Choose an integer between 2 and p-2 (alpha)'/>
-            <div onClick={handleSubmitSetUp}>Submit</div>
+            <div onClick={handleKeyExchange}>Submit</div>
             {error}
         </div> 
         : 
-        <div> alpha: {alpha} prime: {prime} private key alice {privateKey} public key alice {publicKey} </div> }
+        <div> </div> }
     </div>
   )
 }
