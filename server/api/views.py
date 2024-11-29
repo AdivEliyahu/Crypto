@@ -63,7 +63,7 @@ def check_edges(request):
 
 
 #~~~~~~~~~~~~~~~~~~TASK 2~~~~~~~~~~~~~~~~~~~~~~#
-
+#TASKS: 
 # move secret and private_key_bob to .env file & gitignore it 
 @require_GET
 def key_exchange_set_up(request): 
