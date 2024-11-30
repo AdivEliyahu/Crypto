@@ -65,19 +65,28 @@ def check_edges(request):
 #~~~~~~~~~~~~~~~~~~TASK 2~~~~~~~~~~~~~~~~~~~~~~#
 #TASKS: 
 # move secret and private_key_bob to .env file & gitignore it 
-@require_GET
-def key_exchange_set_up(request): 
-    import random
-    prime = int(request.GET.get('prime'))
-    alpha = int(request.GET.get('alpha'))
-    alice_public = int(request.GET.get('publicKey'))
+@require_POST
+@csrf_exempt
+def key_exchange_set_up(request):
+    try:
+        data = json.loads(request.body)
 
-    private_key_bob = random.randint(1,prime - 1) 
-    public_key_bob = pow(alpha,private_key_bob) % prime 
+        prime = int(data.get('prime'))
+        alpha = int(data.get('alpha'))
+        alice_public = int(data.get('publicKey'))
 
-    secret = pow(alice_public,private_key_bob) % prime
+        private_key_bob = random.randint(1, prime - 1)
+        public_key_bob = str(pow(alpha, private_key_bob, prime))
 
+        secret = pow(alice_public, private_key_bob, prime)
 
-    print(f'the secret is: {secret}')
-    return JsonResponse({'message': 'server got the prime and alpha.',
-                        'bobPublicKey': public_key_bob})
+        print(f'bob public is: {public_key_bob}')
+        print(f'The secret is: {secret}')
+
+        return JsonResponse({
+            'message': 'Server received the prime and alpha.',
+            'bobPublicKey': public_key_bob,
+        })
+    except Exception as e:
+        print(f"Error in key exchange: {e}")
+        return JsonResponse({'message': 'Error processing the key exchange.'})

@@ -1,97 +1,101 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
-import { prime } from 'bigint-crypto-utils';
-//TASKS: 
-// npm install bigint-crypto-utils
-// save secret in session storage (NOT in local storage) because its cleared every end of session
-// hide the private key
+import * as bigintCryptoUtils from 'bigint-crypto-utils';
+import bigInt from 'big-integer';
+import './KeyExchange.css'; 
 
 export default function KeyExchange() {
-  
-  const [alpha, setAlpha] = useState(0);
-  const [prime, setPrime] = useState(0);
+  const [alpha, setAlpha] = useState(null);
+  const [prime, setPrime] = useState(null);
   const [validSetUp, setValidSetUp] = useState(false); 
   const [error, setError] = useState('');
-
+  const [privateKey, setPrivateKey] = useState(null);
+  const [publicKey, setPublicKey] = useState(null);
+  const [loading, setLoading] = useState(false); 
 
   useEffect(() => {
-    (async () => {
-        const generatedPrime = await prime(2048);
-        console.log('Prime is:', generatedPrime);
+    const generatePrimeAndAlpha = async () => {
+      try {
+        setLoading(true); // Start loading
+        const generatedPrime = await bigintCryptoUtils.prime(64); //maybe 2048 bits
+        console.log("Generated Prime:", generatedPrime.toString());
         setPrime(generatedPrime);
-    })();
-}, []);
 
-  useEffect(() => {
-      if (prime) {
-          const generatedAlpha = Math.floor(Math.random() * (prime - 3)) + 2;
-          console.log('alpha is: ', generatedAlpha);
+        if (generatedPrime > 3n) {
+          const generatedAlpha = bigintCryptoUtils.randBetween(generatedPrime - 2n, 2n);
+          console.log('Alpha is:', generatedAlpha.toString());
           setAlpha(generatedAlpha);
+        }
+        
+        setLoading(false); 
+      } catch (err) {
+        console.error("Error generating prime or alpha:", err);
+        setError("Error in key generation setup.");
+        setLoading(false); 
       }
-  }, [prime]);
+    };
 
-  const validPrime = () => { 
-    for (let i = 2; i <= prime/2; i++) {
-      if (prime % i === 0) {
-          return false;
-      }
+    generatePrimeAndAlpha();
+  }, []);
+
+  const keyExchange = async () => { 
+    if (!prime || !alpha) {
+      setError("Prime or alpha not generated yet");
+      return;
     }
-    return true;
-  };
 
-  const validAlpha = () => { 
-    if(alpha > prime - 2 || alpha < 2)
-      return false; 
-    return true;
-  };
+    try {
+      const privateKeyValue = bigintCryptoUtils.randBetween(prime - 1n, 1n); //move to session storage?
+      setPrivateKey(privateKeyValue);
+      sessionStorage.setItem('privateKeyAlice', privateKeyValue.toString());
+      console.log('Alice', privateKeyValue);
 
-  const keyExchange = () => { 
-    const privateKeyValue = Math.floor(Math.random() * (prime - 1)) + 1; // move this to *session* storage
-    const publicKeyValue = Math.pow(alpha, privateKeyValue) % prime;
-    //setPublicKey(publicKeyValue); maybe still need that - dont remove
-    
-    axios.get('http://localhost:8000/key_exchange_set_up', {
-      params : { 
-        prime: prime, 
-        alpha : alpha,
-        publicKey: publicKeyValue,
-      }
-    })
-    .then((response) => {
+      const publicKeyValue = bigintCryptoUtils.modPow(alpha, privateKeyValue, prime);
+      setPublicKey(publicKeyValue);
+
+      const response = await axios.post('http://localhost:8000/key_exchange_set_up', {
+        prime: prime.toString(),
+        alpha: alpha.toString(),
+        publicKey: publicKeyValue.toString(),
+      });
+
       console.log(response.data["message"]);
-      console.log('Alice private key: ', privateKeyValue);
+      console.log('Bob public key: ', response.data["bobPublicKey"]);
+      const bobPublicKey = bigInt(response.data["bobPublicKey"]);
 
-      const secret = Math.pow(response.data['bobPublicKey'], privateKeyValue) % prime;
-      console.log('Secret is: ', secret);
-    })
-    .catch((error) => {
-      console.log("API error:", error);
-    })
+      // secret in session storage
+      sessionStorage.setItem('sharedSecret', bobPublicKey.modPow(privateKeyValue, prime).toString());
+
+      setValidSetUp(true);
+    } catch (error) {
+      console.error("API error:", error);
+      setError("Failed to complete key exchange");
+    }
   };
-
 
   const handleKeyExchange = () => {
-    if (validPrime() && validAlpha()) {
-      setValidSetUp(true); // remember useState async maybe move this to the bottom of the handle
-      keyExchange();
-    }
-    else 
-      setError('no good');
+    keyExchange();
   };
-  
-  
-    return (
-    <div>
-       { !validSetUp ?
-        <div className=''>
-            <input type='number' onChange={(event) => setPrime(event.target.value)} placeholder='Choose a large prime p'/>
-            <input type='number' onChange={(event) => setAlpha(event.target.value)} placeholder='Choose an integer between 2 and p-2 (alpha)'/>
-            <div onClick={handleKeyExchange}>Submit</div>
-            {error}
-        </div> 
-        : 
-        <div> </div> }
+
+  return (
+    <div className="key-exchange-container">
+      {!validSetUp ? (
+        <div>
+          {error && <div className="error">{error}</div>}
+          {prime && alpha ? (
+            <button onClick={handleKeyExchange}>Start Key Exchange</button>
+          ) : (
+            <div>Generating secure parameters...</div>
+          )}
+          {loading && (
+            <div className="loading-bar-container">
+              <div className="loading-bar" style={{ width: '100%' }}></div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <h1 className="success-message">Key Exchange Successful!</h1>
+      )}
     </div>
-  )
+  );
 }
