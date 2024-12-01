@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as bigintCryptoUtils from 'bigint-crypto-utils';
-import bigInt from 'big-integer';
+import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
 import './KeyExchange.css'; 
 
 export default function KeyExchange() {
@@ -9,29 +10,26 @@ export default function KeyExchange() {
   const [prime, setPrime] = useState(null);
   const [validSetUp, setValidSetUp] = useState(false); 
   const [error, setError] = useState('');
-  const [privateKey, setPrivateKey] = useState(null);
-  const [publicKey, setPublicKey] = useState(null);
-  const [loading, setLoading] = useState(false); 
+
 
   useEffect(() => {
     const generatePrimeAndAlpha = async () => {
-      try {
-        setLoading(true); // Start loading
-        const generatedPrime = await bigintCryptoUtils.prime(64); //maybe 2048 bits
+      try { 
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+
+        const generatedPrime = await bigintCryptoUtils.prime(64); //size of prime by bits
         console.log("Generated Prime:", generatedPrime.toString());
         setPrime(generatedPrime);
-
+        
         if (generatedPrime > 3n) {
           const generatedAlpha = bigintCryptoUtils.randBetween(generatedPrime - 2n, 2n);
           console.log('Alpha is:', generatedAlpha.toString());
           setAlpha(generatedAlpha);
         }
-        
-        setLoading(false); 
+         
       } catch (err) {
         console.error("Error generating prime or alpha:", err);
-        setError("Error in key generation setup.");
-        setLoading(false); 
+        setError("Error in key generation setup."); 
       }
     };
 
@@ -45,26 +43,25 @@ export default function KeyExchange() {
     }
 
     try {
-      const privateKeyValue = bigintCryptoUtils.randBetween(prime - 1n, 1n); //move to session storage?
-      setPrivateKey(privateKeyValue);
-      sessionStorage.setItem('privateKeyAlice', privateKeyValue.toString());
-      console.log('Alice', privateKeyValue);
+    
+      sessionStorage.setItem('privateKeyAlice', bigintCryptoUtils.randBetween(prime - 1n, 1n).toString());
 
-      const publicKeyValue = bigintCryptoUtils.modPow(alpha, privateKeyValue, prime);
-      setPublicKey(publicKeyValue);
+      // eslint-disable-next-line no-undef
+      const publicKeyValue = bigintCryptoUtils.modPow(alpha, BigInt(sessionStorage.getItem('privateKeyAlice')), prime);
 
       const response = await axios.post('http://localhost:8000/key_exchange_set_up', {
         prime: prime.toString(),
         alpha: alpha.toString(),
         publicKey: publicKeyValue.toString(),
       });
-
+      
       console.log(response.data["message"]);
-      console.log('Bob public key: ', response.data["bobPublicKey"]);
-      const bobPublicKey = bigInt(response.data["bobPublicKey"]);
 
-      // secret in session storage
-      sessionStorage.setItem('sharedSecret', bobPublicKey.modPow(privateKeyValue, prime).toString());
+      // eslint-disable-next-line no-undef
+      const bobPublicKey = BigInt(response.data["bobPublicKey"]);
+
+      // eslint-disable-next-line no-undef
+      sessionStorage.setItem('sharedSecret', bigintCryptoUtils.modPow(bobPublicKey ,BigInt(sessionStorage.getItem('privateKeyAlice')), prime).toString());
 
       setValidSetUp(true);
     } catch (error) {
@@ -73,24 +70,21 @@ export default function KeyExchange() {
     }
   };
 
-  const handleKeyExchange = () => {
-    keyExchange();
-  };
-
   return (
     <div className="key-exchange-container">
       {!validSetUp ? (
         <div>
           {error && <div className="error">{error}</div>}
           {prime && alpha ? (
-            <button onClick={handleKeyExchange}>Start Key Exchange</button>
+            <button onClick={keyExchange}>Start Key Exchange</button>
           ) : (
-            <div>Generating secure parameters...</div>
-          )}
-          {loading && (
-            <div className="loading-bar-container">
-              <div className="loading-bar" style={{ width: '100%' }}></div>
+            <div className='loading-bar'>
+              <div className='loading-bar-text'>Generating secure parameters...</div>
+              <Box sx={{ width: '100vh', height: '10px', mt: 3}}>
+                <LinearProgress color="inherit"/>
+              </Box>
             </div>
+ 
           )}
         </div>
       ) : (
@@ -99,3 +93,4 @@ export default function KeyExchange() {
     </div>
   );
 }
+

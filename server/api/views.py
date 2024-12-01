@@ -84,7 +84,7 @@ def key_exchange_set_up(request):
         print(f'The secret is: {secret}')
 
         return JsonResponse({
-            'message': 'Server received the prime and alpha.',
+            'message': 'The server calculated the secret.',
             'bobPublicKey': public_key_bob,
         })
     except Exception as e:
