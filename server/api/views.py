@@ -3,6 +3,8 @@ from django.views.decorators.http import require_GET,require_POST
 import random
 from django.views.decorators.csrf import csrf_exempt
 import json
+import os 
+from dotenv import load_dotenv
 
 #~~~~~~~~~~~~~~~~~~TASK 1~~~~~~~~~~~~~~~~~~~~~~#
 
@@ -63,11 +65,13 @@ def check_edges(request):
 
 
 #~~~~~~~~~~~~~~~~~~TASK 2~~~~~~~~~~~~~~~~~~~~~~#
-#TASKS: 
-# move secret and private_key_bob to .env file & gitignore it 
+  
+  
 @require_POST
 @csrf_exempt
 def key_exchange_set_up(request):
+    load_dotenv()
+    
     try:
         data = json.loads(request.body)
 
@@ -75,13 +79,15 @@ def key_exchange_set_up(request):
         alpha = int(data.get('alpha'))
         alice_public = int(data.get('publicKey'))
 
-        private_key_bob = random.randint(1, prime - 1)
-        public_key_bob = str(pow(alpha, private_key_bob, prime))
+        os.environ['PRIVATE_KEY'] = str(random.randint(1, prime - 1))
+        public_key_bob = str(pow(alpha, int(os.environ['PRIVATE_KEY']), prime))
 
-        secret = pow(alice_public, private_key_bob, prime)
+        os.environ['SECRET'] = str(pow(alice_public, int(os.environ['PRIVATE_KEY']), prime))
 
         print(f'bob public is: {public_key_bob}')
-        print(f'The secret is: {secret}')
+
+        # TEST = os.environ['SECRET']
+        # print(f'The secret is: {TEST}')
 
         return JsonResponse({
             'message': 'The server calculated the secret.',
