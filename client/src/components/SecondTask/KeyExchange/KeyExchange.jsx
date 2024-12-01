@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as bigintCryptoUtils from 'bigint-crypto-utils';
 import LinearProgress from '@mui/material/LinearProgress';
+import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import './KeyExchange.css'; 
 
@@ -10,6 +11,8 @@ export default function KeyExchange() {
   const [prime, setPrime] = useState(null);
   const [validSetUp, setValidSetUp] = useState(false); 
   const [error, setError] = useState('');
+  const [userText, setUserText] = useState('');
+  const [encText, setEncText] = useState('');
 
 
   useEffect(() => {
@@ -88,7 +91,21 @@ export default function KeyExchange() {
           )}
         </div>
       ) : (
-        <h1 className="success-message">Key Exchange Successful!</h1>
+        <div className='secure-chat'>
+          <div className='success-container'>
+            <h1 className="success-message">Key Exchange Successful!</h1>
+            <p>Now Chat With Server Is Secured!</p>
+          </div>
+          <div className='text-field'>
+          <TextField id="filled-basic" 
+                    label="Chat here" 
+                    variant="filled" 
+                    onChange={(event) => {setUserText(event.target.value)}} 
+                    sx={{ width: '100vh' }}/>
+
+          <button>Send</button>
+          </div>
+        </div>
       )}
     </div>
   );

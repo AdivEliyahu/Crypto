@@ -34,9 +34,30 @@
     text-align: center;
   }
   
+  .secure-chat{
+    display: contents;
+   
+  }
   .success-message {
-    font-size: 18px;
+    font-size: 4vh;
     color: green;
     margin-top: 20px;
+    margin-bottom: 1px;
   }
   
+  .success-container{
+    display: contents;
+    margin-bottom: 20px;
+  }
+
+  .text-field{
+    margin-top: 7vh;
+    display: grid;
+  }
+
+  .text-field > button{
+    margin-top: 4px;
+    margin-left: auto; 
+    margin-right: auto;
+    width: 20vh;
+  }
