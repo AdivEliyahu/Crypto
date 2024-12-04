@@ -7,3 +7,5 @@ django-cors-headers>=4.6.0
 matplotlib>=3.9.2
 networkx>=3.4.2
 python-dotenv>=1.0.1
+cryptography>=44.0.0
+pycryptodome>=3.21.0

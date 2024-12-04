@@ -12,7 +12,7 @@ export default function KeyExchange() {
   const [validSetUp, setValidSetUp] = useState(false); 
   const [error, setError] = useState('');
   const [userText, setUserText] = useState('');
-  const [encText, setEncText] = useState('');
+
 
 
   useEffect(() => {
@@ -102,6 +102,7 @@ export default function KeyExchange() {
                     variant="filled" 
                     onChange={(event) => {setUserText(event.target.value)}} 
                     sx={{ width: '100vh' }}/>
+          <>{userText}</>
 
           <button>Send</button>
           </div>
