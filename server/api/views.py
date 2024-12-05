@@ -65,6 +65,45 @@ def check_edges(request):
 
 
 #~~~~~~~~~~~~~~~~~~TASK 2~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+
+##########CREATE PUBLIC AND PRIVAT RSA KEYS############
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+
+# Generate RSA private key
+private_key = rsa.generate_private_key(
+    public_exponent=65537,
+    key_size=2048,
+)
+
+# Serialize private key to PEM format string
+private_key_pem = private_key.private_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption()
+).decode('utf-8')
+
+# Generate the corresponding public key
+public_key = private_key.public_key()
+
+# Serialize public key to PEM format string
+public_key_pem = public_key.public_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PublicFormat.SubjectPublicKeyInfo
+).decode('utf-8')
+
+# Print keys as strings
+#print("Private Key:\n", private_key_pem)
+#print("Public Key:\n", public_key_pem)
+
+client_public_RSA = ''
+
+######################
   
   
 @require_POST
@@ -75,7 +114,8 @@ def key_exchange_set_up(request):
     try:
         data = json.loads(request.body)
 
-        prime = int(data.get('prime'))
+        prime = int(decrypt_message(private_key, data.get('prime')))
+        print('This is Prime Number: ',prime)
         alpha = int(data.get('alpha'))
         alice_public = int(data.get('publicKey'))
 
@@ -84,10 +124,12 @@ def key_exchange_set_up(request):
 
         os.environ['SECRET'] = str(pow(alice_public, int(os.environ['PRIVATE_KEY']), prime))
 
-        print(f'bob public is: {public_key_bob}')
+        #print(f'bob public is: {public_key_bob}')
 
-        # TEST = os.environ['SECRET']
-        # print(f'The secret is: {TEST}')
+        SECRET = os.environ['SECRET']
+        print(f'The secret is: {SECRET}')
+
+        print(client_public_RSA)
 
         return JsonResponse({
             'message': 'The server calculated the secret.',
@@ -96,3 +138,44 @@ def key_exchange_set_up(request):
     except Exception as e:
         print(f"Error in key exchange: {e}")
         return JsonResponse({'message': 'Error processing the key exchange.'})
+    
+
+@require_POST
+@csrf_exempt
+def get_public_RSA(request): 
+    data = json.loads(request.body.decode('utf-8')) 
+
+    global client_public_RSA
+    client_public_RSA = data.get('client_public_RSA')
+
+    return JsonResponse({
+         'server_public_RSA' : public_key_pem, 
+         'message': 'got the client public RSA key.'
+    })
+
+
+
+
+
+#Helper Functions
+# Encryption Function
+def encrypt_message(public_key, message):
+    return public_key.encrypt(
+        message,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+
+# Decryption Function
+def decrypt_message(private_key, encrypted_message):
+    return private_key.decrypt(
+        encrypted_message,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )

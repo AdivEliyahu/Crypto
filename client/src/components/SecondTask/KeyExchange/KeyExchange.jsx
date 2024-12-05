@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as bigintCryptoUtils from 'bigint-crypto-utils';
 import LinearProgress from '@mui/material/LinearProgress';
-import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
+import forge from 'node-forge';
 import './KeyExchange.css'; 
 
 export default function KeyExchange() {
@@ -11,13 +11,39 @@ export default function KeyExchange() {
   const [prime, setPrime] = useState(null);
   const [validSetUp, setValidSetUp] = useState(false); 
   const [error, setError] = useState('');
-  const [userText, setUserText] = useState('');
 
+  const [publicRSAkey, setPublicRSAkey] = useState(null);
+  const [privateRSAkey, setPrivateRSAkey] = useState(null);
+  const [serverRSAkey, setServerRSAkey] = useState(null);
+
+  // change this 
+  useEffect(() => {
+    // Generate RSA keys only once when the component mounts
+    const generateRSAKeys = () => {
+      const { privateKey, publicKey } = forge.pki.rsa.generateKeyPair(2048);
+      const privateKeyPem = forge.pki.privateKeyToPem(privateKey);
+      const publicKeyPem = forge.pki.publicKeyToPem(publicKey);
+
+      setPublicRSAkey(publicKeyPem);
+      setPrivateRSAkey(privateKeyPem);
+    };
+
+    generateRSAKeys();
+  }, []); 
+  
 
 
   useEffect(() => {
     const generatePrimeAndAlpha = async () => {
       try { 
+        if (!publicRSAkey) return;
+
+        const response = await axios.post('http://localhost:8000/get_public_RSA', {
+          client_public_RSA: publicRSAkey.toString(),
+        });
+
+        setServerRSAkey(response.data['server_public_RSA']);
+        
         await new Promise((resolve) => setTimeout(resolve, 2500));
 
         const generatedPrime = await bigintCryptoUtils.prime(64); //size of prime by bits
@@ -37,7 +63,7 @@ export default function KeyExchange() {
     };
 
     generatePrimeAndAlpha();
-  }, []);
+  }, [publicRSAkey, privateRSAkey,serverRSAkey]);
 
   const keyExchange = async () => { 
     if (!prime || !alpha) {
@@ -52,8 +78,10 @@ export default function KeyExchange() {
       // eslint-disable-next-line no-undef
       const publicKeyValue = bigintCryptoUtils.modPow(alpha, BigInt(sessionStorage.getItem('privateKeyAlice')), prime);
 
+      const test = forge.pki.publicKeyFromPem(serverRSAkey);
+
       const response = await axios.post('http://localhost:8000/key_exchange_set_up', {
-        prime: prime.toString(),
+        prime: test.encrypt(prime.toString(), 'RSA-OAEP'),
         alpha: alpha.toString(),
         publicKey: publicKeyValue.toString(),
       });
@@ -72,6 +100,8 @@ export default function KeyExchange() {
       setError("Failed to complete key exchange");
     }
   };
+
+  
 
   return (
     <div className="key-exchange-container">
@@ -94,17 +124,7 @@ export default function KeyExchange() {
         <div className='secure-chat'>
           <div className='success-container'>
             <h1 className="success-message">Key Exchange Successful!</h1>
-            <p>Now Chat With Server Is Secured!</p>
-          </div>
-          <div className='text-field'>
-          <TextField id="filled-basic" 
-                    label="Chat here" 
-                    variant="filled" 
-                    onChange={(event) => {setUserText(event.target.value)}} 
-                    sx={{ width: '100vh' }}/>
-          <>{userText}</>
-
-          <button>Send</button>
+            <p>Your Secret Is {sessionStorage.getItem('sharedSecret')}</p>
           </div>
         </div>
       )}
