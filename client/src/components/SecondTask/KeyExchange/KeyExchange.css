@@ -1,0 +1,63 @@
+/* KeyExchange.css */
+.key-exchange-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f0f0f0; /* light gray */
+    color: #333333; /* dark gray text */
+    font-family: Arial, sans-serif;
+  }
+  
+  .error {
+    color: red;
+    margin-bottom: 20px;
+  }
+  
+  button {
+    background-color: #333333; /* dark gray */
+    color: #f0f0f0; /* light gray */
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+  }
+  
+  button:hover {
+    background-color: #555555;
+  }
+  
+  .loading-bar {
+    text-align: center;
+  }
+  
+  .secure-chat{
+    display: contents;
+   
+  }
+  .success-message {
+    font-size: 4vh;
+    color: green;
+    margin-top: 20px;
+    margin-bottom: 1px;
+  }
+  
+  .success-container{
+    display: contents;
+    margin-bottom: 20px;
+  }
+
+  .text-field{
+    margin-top: 7vh;
+    display: grid;
+  }
+
+  .text-field > button{
+    margin-top: 4px;
+    margin-left: auto; 
+    margin-right: auto;
+    width: 20vh;
+  }

@@ -1,0 +1,52 @@
+/* Main container styling */
+.container {
+    display: flex;
+    flex-direction: column; /* Stack title and button-container vertically */
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #F8F9FA; /* Palette background */
+}
+
+/* Title styling */
+.title {
+    font-size: 3rem; /* Large font size */
+    font-weight: bold;
+    margin-bottom: 5vh; /* Space between title and buttons */
+    color: #495057; /* Dark gray for title */
+    text-align: center;
+}
+
+/* Button container for side-by-side buttons */
+.button-container {
+    display: flex; /* Align buttons side by side */
+    gap: 2vh; /* Space between buttons */
+}
+
+/* Common styles for clickable divs */
+.clickable-div {
+    font-size: 1.8vh;
+    width: 40vh;
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    background-color: #ADB5BD;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover and active effects */
+.clickable-div:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.clickable-div:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}

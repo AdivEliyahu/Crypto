@@ -3,6 +3,15 @@ from django.views.decorators.http import require_GET,require_POST
 import random
 from django.views.decorators.csrf import csrf_exempt
 import json
+import os 
+from dotenv import load_dotenv
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+import base64
+
+#~~~~~~~~~~~~~~~~~~TASK 1~~~~~~~~~~~~~~~~~~~~~~#
 
 # Real Graph
 nodes1 = [1,2,3,4,5,6]
@@ -58,3 +67,107 @@ def check_edges(request):
     print(f'[Status] user was right (node: {node}).')
     
     return JsonResponse({'message': True})
+
+
+#~~~~~~~~~~~~~~~~~~TASK 2~~~~~~~~~~~~~~~~~~~~~~#
+
+
+private_key = rsa.generate_private_key(
+    public_exponent=65537,
+    key_size=2048,
+)
+
+    # Serialize private key to PEM format string
+os.environ['SERVER_PRIVATE_KEY_PEM'] = private_key.private_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption(),
+).decode("utf-8")
+
+    # Serialize public key to PEM format string
+os.environ['SERVER_PUBLIC_KEY'] = private_key.public_key().public_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PublicFormat.SubjectPublicKeyInfo,
+).decode("utf-8")
+
+
+@csrf_exempt
+@require_POST
+def key_exchange_set_up(request):
+    from base64 import b64decode
+    try:
+
+        data = json.loads(request.body)
+
+        prime = int(decrypt_message(serialization.load_pem_private_key(os.getenv("SERVER_PRIVATE_KEY_PEM").encode("utf-8"),password=None,), 
+                                    b64decode(data.get("prime"))))
+        alpha = int(decrypt_message(serialization.load_pem_private_key(os.getenv("SERVER_PRIVATE_KEY_PEM").encode("utf-8"),password=None,), 
+                                    b64decode(data.get("alpha"))))
+        alice_public = int(decrypt_message(serialization.load_pem_private_key(os.getenv("SERVER_PRIVATE_KEY_PEM").encode("utf-8"),password=None,), 
+                                           b64decode(data.get("publicKey"))))
+
+        os.environ['BOB_PRIVATE'] = str(random.randint(1, prime - 1))
+        public_key_bob = str(pow(alpha, int(os.environ['BOB_PRIVATE']), prime))
+
+        os.environ["SECRET"] = str(pow(alice_public, int(os.environ['BOB_PRIVATE']), prime))
+
+        client_public_RSA_pem = os.getenv("CLIENT_PUBLIC_RSA")
+        client_public_key = serialization.load_pem_public_key(client_public_RSA_pem.encode("utf-8"))
+        encrypted_bob_key = client_public_key.encrypt(
+            public_key_bob.encode("utf-8"),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            ),
+        )
+
+        encrypted_bob_key_base64 = base64.b64encode(encrypted_bob_key).decode("utf-8")
+
+        secret = os.environ["SECRET"] # just for debug
+        print(f"The shared secret is: {secret}")
+
+        return JsonResponse({
+            "message": "The server calculated the shared secret.",
+            "bobPublicKey": encrypted_bob_key_base64,  
+        })
+    except Exception as e:
+        print(f"Error in key exchange: {e}")
+        return JsonResponse({"message": "Error processing the key exchange."})
+    
+
+@require_POST
+@csrf_exempt
+def get_public_RSA(request): 
+    data = json.loads(request.body.decode('utf-8')) 
+
+    os.environ['client_public_RSA'] = data.get('client_public_RSA')
+
+    return JsonResponse({
+         'server_public_RSA' : os.environ['SERVER_PUBLIC_KEY'], 
+         'message': 'got the client public RSA key.'
+    })
+
+
+
+#Helper Functions
+
+def encrypt_message(public_key, message):
+    return public_key.encrypt(
+        message,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+
+def decrypt_message(private_key, encrypted_message):
+    return private_key.decrypt(
+        encrypted_message,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
