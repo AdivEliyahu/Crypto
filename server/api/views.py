@@ -5,6 +5,11 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 import os 
 from dotenv import load_dotenv
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+import base64
 
 #~~~~~~~~~~~~~~~~~~TASK 1~~~~~~~~~~~~~~~~~~~~~~#
 
@@ -67,90 +72,68 @@ def check_edges(request):
 #~~~~~~~~~~~~~~~~~~TASK 2~~~~~~~~~~~~~~~~~~~~~~#
 
 
-
-
-##########CREATE PUBLIC AND PRIVAT RSA KEYS############
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import hashes
-from base64 import b64decode
-import base64
-
-# Generate RSA private key
 private_key = rsa.generate_private_key(
     public_exponent=65537,
     key_size=2048,
 )
 
-# Serialize private key to PEM format string
-private_key_pem = private_key.private_bytes(
+    # Serialize private key to PEM format string
+os.environ['SERVER_PRIVATE_KEY_PEM'] = private_key.private_bytes(
     encoding=serialization.Encoding.PEM,
     format=serialization.PrivateFormat.PKCS8,
-    encryption_algorithm=serialization.NoEncryption()
-).decode('utf-8')
+    encryption_algorithm=serialization.NoEncryption(),
+).decode("utf-8")
 
-# Generate the corresponding public key
-public_key = private_key.public_key()
-
-# Serialize public key to PEM format string
-public_key_pem = public_key.public_bytes(
+    # Serialize public key to PEM format string
+os.environ['SERVER_PUBLIC_KEY'] = private_key.public_key().public_bytes(
     encoding=serialization.Encoding.PEM,
-    format=serialization.PublicFormat.SubjectPublicKeyInfo
-).decode('utf-8')
+    format=serialization.PublicFormat.SubjectPublicKeyInfo,
+).decode("utf-8")
 
-# Print keys as strings
-#print("Private Key:\n", private_key_pem)
-#print("Public Key:\n", public_key_pem)
 
-client_public_RSA = ''
-
-######################
-  
-  
-@require_POST
 @csrf_exempt
+@require_POST
 def key_exchange_set_up(request):
-    load_dotenv()
-    
+    from base64 import b64decode
     try:
+
         data = json.loads(request.body)
 
-        prime = int(decrypt_message(private_key, b64decode(data.get('prime'))))
-        alpha = int(decrypt_message(private_key, b64decode(data.get('alpha'))))
-        alice_public = int(decrypt_message(private_key, b64decode(data.get('publicKey'))))
+        prime = int(decrypt_message(serialization.load_pem_private_key(os.getenv("SERVER_PRIVATE_KEY_PEM").encode("utf-8"),password=None,), 
+                                    b64decode(data.get("prime"))))
+        alpha = int(decrypt_message(serialization.load_pem_private_key(os.getenv("SERVER_PRIVATE_KEY_PEM").encode("utf-8"),password=None,), 
+                                    b64decode(data.get("alpha"))))
+        alice_public = int(decrypt_message(serialization.load_pem_private_key(os.getenv("SERVER_PRIVATE_KEY_PEM").encode("utf-8"),password=None,), 
+                                           b64decode(data.get("publicKey"))))
 
-        os.environ['PRIVATE_KEY'] = str(random.randint(1, prime - 1))
-        public_key_bob = str(pow(alpha, int(os.environ['PRIVATE_KEY']), prime))
+        os.environ['BOB_PRIVATE'] = str(random.randint(1, prime - 1))
+        public_key_bob = str(pow(alpha, int(os.environ['BOB_PRIVATE']), prime))
 
-        os.environ['SECRET'] = str(pow(alice_public, int(os.environ['PRIVATE_KEY']), prime))
+        os.environ["SECRET"] = str(pow(alice_public, int(os.environ['BOB_PRIVATE']), prime))
 
-        client_public_key = serialization.load_pem_public_key(client_public_RSA.encode('utf-8'))
-
-        # Encrypt public_key_bob with the client's public RSA key
+        client_public_RSA_pem = os.getenv("CLIENT_PUBLIC_RSA")
+        client_public_key = serialization.load_pem_public_key(client_public_RSA_pem.encode("utf-8"))
         encrypted_bob_key = client_public_key.encrypt(
-            public_key_bob.encode('utf-8'),  # Convert to bytes before encryption
+            public_key_bob.encode("utf-8"),
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
-                label=None
-            )
+                label=None,
+            ),
         )
 
-        # Encode the encrypted_bob_key in Base64
-        encrypted_bob_key_base64 = base64.b64encode(encrypted_bob_key).decode('utf-8')
+        encrypted_bob_key_base64 = base64.b64encode(encrypted_bob_key).decode("utf-8")
 
-        SECRET = os.environ['SECRET']
-        print(f'The secret is: {SECRET}')
+        secret = os.environ["SECRET"] # just for debug
+        print(f"The shared secret is: {secret}")
 
         return JsonResponse({
-            'message': 'The server calculated the secret.',
-            'bobPublicKey': encrypted_bob_key_base64,  # Send the Base64-encoded key
+            "message": "The server calculated the shared secret.",
+            "bobPublicKey": encrypted_bob_key_base64,  
         })
     except Exception as e:
         print(f"Error in key exchange: {e}")
-        return JsonResponse({'message': 'Error processing the key exchange.'})
-
+        return JsonResponse({"message": "Error processing the key exchange."})
     
 
 @require_POST
@@ -158,20 +141,17 @@ def key_exchange_set_up(request):
 def get_public_RSA(request): 
     data = json.loads(request.body.decode('utf-8')) 
 
-    global client_public_RSA
-    client_public_RSA = data.get('client_public_RSA')
+    os.environ['client_public_RSA'] = data.get('client_public_RSA')
 
     return JsonResponse({
-         'server_public_RSA' : public_key_pem, 
+         'server_public_RSA' : os.environ['SERVER_PUBLIC_KEY'], 
          'message': 'got the client public RSA key.'
     })
 
 
 
-
-
 #Helper Functions
-# Encryption Function
+
 def encrypt_message(public_key, message):
     return public_key.encrypt(
         message,
@@ -182,7 +162,6 @@ def encrypt_message(public_key, message):
         )
     )
 
-# Decryption Function
 def decrypt_message(private_key, encrypted_message):
     return private_key.decrypt(
         encrypted_message,

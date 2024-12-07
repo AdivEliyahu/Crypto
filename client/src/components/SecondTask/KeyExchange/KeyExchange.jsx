@@ -13,19 +13,15 @@ export default function KeyExchange() {
   const [error, setError] = useState('');
 
   const [publicRSAkey, setPublicRSAkey] = useState(null);
-  const [privateRSAkey, setPrivateRSAkey] = useState(null);
   const [serverRSAkey, setServerRSAkey] = useState(null);
 
-  // change this 
   useEffect(() => {
-    // Generate RSA keys only once when the component mounts
     const generateRSAKeys = () => {
       const { privateKey, publicKey } = forge.pki.rsa.generateKeyPair(2048);
-      const privateKeyPem = forge.pki.privateKeyToPem(privateKey);
+      sessionStorage.setItem('PRIVATE_KEY_PEM', forge.pki.privateKeyToPem(privateKey));
       const publicKeyPem = forge.pki.publicKeyToPem(publicKey);
 
       setPublicRSAkey(publicKeyPem);
-      setPrivateRSAkey(privateKeyPem);
     };
 
     generateRSAKeys();
@@ -37,22 +33,24 @@ export default function KeyExchange() {
     const generatePrimeAndAlpha = async () => {
       try { 
         if (!publicRSAkey) return;
-
         const response = await axios.post('http://localhost:8000/get_public_RSA', {
           client_public_RSA: publicRSAkey.toString(),
-        });
+      }, {
+          headers: {
+              'Content-Type': 'application/json',
+
+          }
+      });
 
         setServerRSAkey(response.data['server_public_RSA']);
         
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
 
-        const generatedPrime = await bigintCryptoUtils.prime(64); //size of prime by bits
-        console.log("Generated Prime:", generatedPrime.toString());
+        const generatedPrime = await bigintCryptoUtils.prime(128); //size of prime by bits
         setPrime(generatedPrime);
         
         if (generatedPrime > 3n) {
           const generatedAlpha = bigintCryptoUtils.randBetween(generatedPrime - 2n, 2n);
-          console.log('Alpha is:', generatedAlpha.toString());
           setAlpha(generatedAlpha);
         }
          
@@ -63,7 +61,7 @@ export default function KeyExchange() {
     };
 
     generatePrimeAndAlpha();
-  }, [publicRSAkey, privateRSAkey,serverRSAkey]);
+  }, [publicRSAkey,serverRSAkey]);
 
   const keyExchange = async () => { 
     if (!prime || !alpha) {
@@ -104,19 +102,13 @@ export default function KeyExchange() {
       
       console.log(response.data["message"]);
 
-      // Decode the Base64 encrypted key
       const encryptedBobKey = forge.util.decode64(response.data["bobPublicKey"]);
 
-      // Convert the private RSA key (PEM) into a usable object
-      const privateKey = forge.pki.privateKeyFromPem(privateRSAkey);
-
-      // Decrypt the key
-      const bobPublicKeyDecrypted = privateKey.decrypt(encryptedBobKey, 'RSA-OAEP', {
+      const bobPublicKeyDecrypted = forge.pki.privateKeyFromPem(sessionStorage.getItem('PRIVATE_KEY_PEM'))
+                                    .decrypt(encryptedBobKey, 'RSA-OAEP', {
           md: forge.md.sha256.create(),
           mgf1: forge.mgf.mgf1.create(forge.md.sha256.create())
       });
-
-      console.log("Decrypted Bob's Public Key:", bobPublicKeyDecrypted);
 
       // eslint-disable-next-line no-undef
       const bobPublicKey = BigInt(bobPublicKeyDecrypted);
@@ -158,6 +150,7 @@ export default function KeyExchange() {
           </div>
         </div>
       )}
+      
     </div>
   );
 }
