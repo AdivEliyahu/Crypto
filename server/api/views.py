@@ -75,6 +75,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 from base64 import b64decode
+import base64
 
 # Generate RSA private key
 private_key = rsa.generate_private_key(
@@ -115,8 +116,6 @@ def key_exchange_set_up(request):
     try:
         data = json.loads(request.body)
 
-        
-
         prime = int(decrypt_message(private_key, b64decode(data.get('prime'))))
         alpha = int(decrypt_message(private_key, b64decode(data.get('alpha'))))
         alice_public = int(decrypt_message(private_key, b64decode(data.get('publicKey'))))
@@ -126,18 +125,32 @@ def key_exchange_set_up(request):
 
         os.environ['SECRET'] = str(pow(alice_public, int(os.environ['PRIVATE_KEY']), prime))
 
-        #print(f'bob public is: {public_key_bob}')
+        client_public_key = serialization.load_pem_public_key(client_public_RSA.encode('utf-8'))
+
+        # Encrypt public_key_bob with the client's public RSA key
+        encrypted_bob_key = client_public_key.encrypt(
+            public_key_bob.encode('utf-8'),  # Convert to bytes before encryption
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+
+        # Encode the encrypted_bob_key in Base64
+        encrypted_bob_key_base64 = base64.b64encode(encrypted_bob_key).decode('utf-8')
 
         SECRET = os.environ['SECRET']
         print(f'The secret is: {SECRET}')
 
         return JsonResponse({
             'message': 'The server calculated the secret.',
-            'bobPublicKey': public_key_bob,
+            'bobPublicKey': encrypted_bob_key_base64,  # Send the Base64-encoded key
         })
     except Exception as e:
         print(f"Error in key exchange: {e}")
         return JsonResponse({'message': 'Error processing the key exchange.'})
+
     
 
 @require_POST

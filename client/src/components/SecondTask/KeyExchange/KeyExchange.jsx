@@ -104,8 +104,22 @@ export default function KeyExchange() {
       
       console.log(response.data["message"]);
 
+      // Decode the Base64 encrypted key
+      const encryptedBobKey = forge.util.decode64(response.data["bobPublicKey"]);
+
+      // Convert the private RSA key (PEM) into a usable object
+      const privateKey = forge.pki.privateKeyFromPem(privateRSAkey);
+
+      // Decrypt the key
+      const bobPublicKeyDecrypted = privateKey.decrypt(encryptedBobKey, 'RSA-OAEP', {
+          md: forge.md.sha256.create(),
+          mgf1: forge.mgf.mgf1.create(forge.md.sha256.create())
+      });
+
+      console.log("Decrypted Bob's Public Key:", bobPublicKeyDecrypted);
+
       // eslint-disable-next-line no-undef
-      const bobPublicKey = BigInt(response.data["bobPublicKey"]);
+      const bobPublicKey = BigInt(bobPublicKeyDecrypted);
 
       // eslint-disable-next-line no-undef
       sessionStorage.setItem('sharedSecret', bigintCryptoUtils.modPow(bobPublicKey ,BigInt(sessionStorage.getItem('privateKeyAlice')), prime).toString());
