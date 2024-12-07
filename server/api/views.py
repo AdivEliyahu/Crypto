@@ -74,6 +74,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
+from base64 import b64decode
 
 # Generate RSA private key
 private_key = rsa.generate_private_key(
@@ -116,10 +117,9 @@ def key_exchange_set_up(request):
 
         
 
-        prime = int(decrypt_message(private_key, bytes(data.get('prime'), 'utf-8')))
-        print('This is Prime Number: ',prime)
-        alpha = int(data.get('alpha'))
-        alice_public = int(data.get('publicKey'))
+        prime = int(decrypt_message(private_key, b64decode(data.get('prime'))))
+        alpha = int(decrypt_message(private_key, b64decode(data.get('alpha'))))
+        alice_public = int(decrypt_message(private_key, b64decode(data.get('publicKey'))))
 
         os.environ['PRIVATE_KEY'] = str(random.randint(1, prime - 1))
         public_key_bob = str(pow(alpha, int(os.environ['PRIVATE_KEY']), prime))
@@ -130,8 +130,6 @@ def key_exchange_set_up(request):
 
         SECRET = os.environ['SECRET']
         print(f'The secret is: {SECRET}')
-
-        print(client_public_RSA)
 
         return JsonResponse({
             'message': 'The server calculated the secret.',

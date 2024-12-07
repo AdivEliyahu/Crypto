@@ -44,7 +44,7 @@ export default function KeyExchange() {
 
         setServerRSAkey(response.data['server_public_RSA']);
         
-        await new Promise((resolve) => setTimeout(resolve, 2500));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const generatedPrime = await bigintCryptoUtils.prime(64); //size of prime by bits
         console.log("Generated Prime:", generatedPrime.toString());
@@ -78,12 +78,28 @@ export default function KeyExchange() {
       // eslint-disable-next-line no-undef
       const publicKeyValue = bigintCryptoUtils.modPow(alpha, BigInt(sessionStorage.getItem('privateKeyAlice')), prime);
 
-      const test = forge.pki.publicKeyFromPem(serverRSAkey);
+      const publicKeyServer = forge.pki.publicKeyFromPem(serverRSAkey);
+
+      // Convert the prime to bytes before encrypting
+      const encryptedPrime = forge.util.encode64(publicKeyServer.encrypt(prime.toString(), 'RSA-OAEP', {
+          md: forge.md.sha256.create(),
+          mgf1: forge.mgf.mgf1.create(forge.md.sha256.create())
+      }));
+
+      const encryptedAlpha = forge.util.encode64(publicKeyServer.encrypt(alpha.toString(), 'RSA-OAEP', {
+        md: forge.md.sha256.create(),
+        mgf1: forge.mgf.mgf1.create(forge.md.sha256.create())
+      }));
+
+      const encryptedPublicKeyValue = forge.util.encode64(publicKeyServer.encrypt(publicKeyValue.toString(), 'RSA-OAEP', {
+        md: forge.md.sha256.create(),
+        mgf1: forge.mgf.mgf1.create(forge.md.sha256.create())
+      }));
 
       const response = await axios.post('http://localhost:8000/key_exchange_set_up', {
-        prime: test.encrypt(prime.toString(), 'RSA-OAEP'),
-        alpha: alpha.toString(),
-        publicKey: publicKeyValue.toString(),
+          prime: encryptedPrime,
+          alpha: encryptedAlpha,
+          publicKey: encryptedPublicKeyValue,
       });
       
       console.log(response.data["message"]);
