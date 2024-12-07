@@ -114,7 +114,9 @@ def key_exchange_set_up(request):
     try:
         data = json.loads(request.body)
 
-        prime = int(decrypt_message(private_key, data.get('prime')))
+        
+
+        prime = int(decrypt_message(private_key, bytes(data.get('prime'), 'utf-8')))
         print('This is Prime Number: ',prime)
         alpha = int(data.get('alpha'))
         alice_public = int(data.get('publicKey'))
