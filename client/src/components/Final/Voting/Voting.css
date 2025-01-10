@@ -1,0 +1,90 @@
+/* Voting.css */
+
+/* General styles */
+.container {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+  }
+  
+  /* Container styles */
+  .party {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 0.2rem solid #ddd;
+    border-radius: 1rem;
+    padding: 2rem 3rem;
+    margin: 1rem auto;
+    max-width: 40rem; /* 640px */
+    background-color: #ffffff;
+    box-shadow: 0 0.5rem 0.75rem rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+  }
+  
+  /* Image styles */
+  .party img {
+    width: 5rem; /* 80px */
+    height: 5rem; /* 80px */
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  /* Text styles */
+  .party span {
+    font-size: 1.5rem; /* 24px */
+    font-weight: bold;
+    color: #333;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 48rem) { /* 768px */
+    .party {
+      flex-direction: column;
+      text-align: center;
+      padding: 2rem;
+    }
+  
+    .party img {
+      margin-top: 1rem; /* 16px */
+      width: 4rem; /* 64px */
+      height: 4rem; /* 64px */
+    }
+  
+    .party span {
+      font-size: 1.25rem; /* 20px */
+    }
+  }
+  
+  @media (max-width: 30rem) { /* 480px */
+    .party {
+      padding: 1.5rem;
+    }
+  
+    .party img {
+      width: 3rem; /* 48px */
+      height: 3rem; /* 48px */
+    }
+  
+    .party span {
+      font-size: 1rem; /* 16px */
+    }
+  }
+
+  .party:hover{ 
+    animation: box-move-anim 0.5s infinite alternate-reverse;
+  }
+  @keyframes box-move-anim {
+    0% {
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      transform: translateY(-5px) scale(1.2);
+    }
+  }

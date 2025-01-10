@@ -3,6 +3,7 @@ import IsomorphicGraph from './components/FirstTask/IsomorphicGraph/IsomorphicGr
 import Success from './components/FirstTask/Result/Success';
 import Home from './components/Home/Home'
 import KeyExchange from './components/SecondTask/KeyExchange/KeyExchange'
+import Voting from './components/Final/Voting/Voting';
 import './App.css'
 
 import { createGlobalStyle } from 'styled-components';
@@ -23,6 +24,7 @@ function App() {
           <Route path='Isomorfphic Graph' element={<IsomorphicGraph/>}/>
           <Route path='Success' element={<Success/>}/>
           <Route path='Diffie Hellman & AES' element={<KeyExchange/>} />
+          <Route path='Voting' element={<Voting/>} />
 
       </Routes>
     </div>

@@ -26,6 +26,12 @@ f = {'A':1, 'B':2, 'C':3, 'D':4,'E':5, 'F':6}
 
 @require_GET
 def get_graphs(request):
+    ###########################################################################
+    from .models import center;
+    result = center.objects.filter().values()           #TEST - Remove this line
+    print(result)
+    ###########################################################################
+
     return JsonResponse({'nodes1':nodes1,
                         'nodes2':nodes2,'edges2':edges2,  
                         'f':f})
