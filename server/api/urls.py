@@ -6,9 +6,8 @@ urlpatterns = [
     path('check_edges', check_edges),
     path('key_exchange_set_up', key_exchange_set_up),
     path('get_public_RSA', get_public_RSA),
-
-
-
+    path('get_voters', get_voters),
+    path('vote', vote),
 
 
 ]

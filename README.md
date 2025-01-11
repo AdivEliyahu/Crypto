@@ -38,7 +38,10 @@ Before running the project, ensure you have the following installed:
    ```bash
    python manage.py migrate
    ```
-4. Run the Django server:
+5. Create .env file: 
+   server
+   |____.env
+6. Run the Django server:
    ```bash
    python manage.py runserver
    ```
