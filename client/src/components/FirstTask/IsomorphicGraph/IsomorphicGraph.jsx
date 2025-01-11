@@ -12,6 +12,8 @@ const IsomorphicGraph = () => {
     const [nodes2, setNodes2] = useState([]);
     const [edges2, setEdges2] = useState([]);
     const [PIfunc, setPIfunc] = useState();
+    const [Id, setId] = useState(null);
+    const [filledId, setFilledId] = useState(null);
 
     const [isLoaded, setIsLoaded] = useState(false); 
     const nav = useNavigate(); 
@@ -28,47 +30,53 @@ const IsomorphicGraph = () => {
             .catch((error) => {
                 console.log("API error:", error);
             });
-    }, []); 
+    }, [filledId]); 
 
-    // const handleHome = () => { 
-    //     nav('');
-    // };
-    
     return (
-        
         <div>
-             <IconButton
-                onClick={() => nav('/')} 
-                style={{
-                    position: 'fixed', 
-                    top: '20px',
-                    left: '20px',
-                    color: '#495057', 
-                    zIndex: 10, 
-                }}
-            >
-                <HomeIcon fontSize="large" />
-            </IconButton>
-            
+            {filledId ? (
 
-            <h1 className='title'>Isomorphic Graphs</h1>
-            <div className='isomorphicGraphs'> 
-                {isLoaded ? (
-                    <>
-                        <div>          
-                            <GraphView className='IsoGraph' {...{ nodes: nodes2, edges: edges2, numGraph: 2 }} />            
-                        </div>
-                        <>
-                            <ProverGraph {...{PIfunc: PIfunc, nodes1: nodes1}}/>
-                        </>
-                    </>
-                ) : (
-                    <p>Loading graphs...</p> 
-                )}
-            </div> 
-            <div >
+            <div>
+                <IconButton
+                    onClick={() => nav('/')} 
+                    style={{
+                        position: 'fixed', 
+                        top: '20px',
+                        left: '20px',
+                        color: '#495057', 
+                        zIndex: 10, 
+                    }}
+                >
+                    <HomeIcon fontSize="large" />
+                </IconButton>
                 
-            </div>
+
+                <h1 className='title'>Isomorphic Graphs</h1>
+                <div className='isomorphicGraphs'> 
+                    {isLoaded ? (
+                        <>
+                            <div>          
+                                <GraphView className='IsoGraph' {...{ nodes: nodes2, edges: edges2, numGraph: 2 }} />            
+                            </div>
+                            <>
+                                <ProverGraph {...{PIfunc: PIfunc, nodes1: nodes1, userID : Id}}/>
+                            </>
+                        </>
+                    ) : (
+                        <p>Loading graphs...</p> 
+                    )}
+                </div> 
+                <div >
+                    
+                </div>
+            </div>  
+            ) : (
+                <div className='idForm'>
+                    <h1>Please Enter Your ID</h1>
+                    <input type='number' id='filledId' onChange={(e) => setId(e.target.value)}/>
+                    <button onClick={() => setFilledId(Id)}>Submit</button>
+                </div> 
+            )}
         </div>
     );
 }
