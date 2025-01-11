@@ -4,12 +4,11 @@ from django.db import models
 
 class citizen(models.Model):
     id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=30)
     center_id = models.IntegerField()
+    has_vote= models.BooleanField()
 
 class center(models.Model):
-    id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=30)
-    location = models.CharField(max_length=30)
+    center_id = models.IntegerField
+    vote=models.CharField(max_length=2)
 
 
