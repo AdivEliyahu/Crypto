@@ -26,12 +26,6 @@ f = {'A':1, 'B':2, 'C':3, 'D':4,'E':5, 'F':6}
 
 @require_GET
 def get_graphs(request):
-    ###########################################################################
-    from .models import center;
-    result = center.objects.filter().values()           #TEST - Remove this line
-    print(result)
-    ###########################################################################
-
     return JsonResponse({'nodes1':nodes1,
                         'nodes2':nodes2,'edges2':edges2,  
                         'f':f})
@@ -177,3 +171,45 @@ def decrypt_message(private_key, encrypted_message):
             label=None
         )
     )
+
+#~~~~~~~~~~~~~~~~~~ Final Task ~~~~~~~~~~~~~~~~~~~~~~#
+@require_GET
+def get_voters(request):
+    from .models import center;
+    republican_voters = center.objects.filter(choice='Republican').values()
+    democrat_voters = center.objects.filter(choice='Democrat').values()           
+
+    return JsonResponse({'republicansVoters': len(republican_voters),
+                         'democratsVoters': len(democrat_voters)})
+
+
+@require_POST
+@csrf_exempt
+def vote(request):
+    from .models import voters, center
+    try:
+        data = json.loads(request.body)
+        voter_id = data.get('voter_id')
+        choice = data.get('choice')
+
+        voter = voters.objects.filter(id=voter_id).values().first()
+        if not voter:
+            return JsonResponse({'message': 'Voter not found.'})
+
+        center_id = voter['center_id']
+
+        if voter['has_vote']:
+            return JsonResponse({'message': 'This voter has already voted.'})
+
+        center_instance = center.objects.filter(center_id=center_id, choice='None').first()
+        if center_instance:
+            center_instance.choice = choice
+            center_instance.save()
+            print('saved')
+
+        voters.objects.filter(id=voter_id).update(has_vote=True)
+
+        return JsonResponse({'message': 'The vote was successfully registered.'})
+
+    except Exception as e:
+        return JsonResponse({'message': 'Error registering the vote.', 'error': str(e)})

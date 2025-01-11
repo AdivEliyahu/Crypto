@@ -13,7 +13,6 @@ const ProverGraph = (props) => {
     const [counter, setCounter] = useState(0); 
     const [currentNode, setCurrentNode] = useState(null);
     const [userEdegs, setUserEdges] = useState([]);
-
     const nav = useNavigate();
 
     const PIfunc = props['PIfunc'];
@@ -77,7 +76,7 @@ const ProverGraph = (props) => {
         } 
 
         else if (currentNodeIndex === randNodes.length - 1 && isCorrect && !hadIncorrectAnswer) {
-            nav('/Success');
+            nav('/Voting', { state: { userID: props.userID } });
         }
 
         
