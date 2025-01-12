@@ -14,6 +14,8 @@ const IsomorphicGraph = () => {
     const [PIfunc, setPIfunc] = useState();
     const [Id, setId] = useState(null);
     const [filledId, setFilledId] = useState(null);
+    const [userStatus, setUserStatus] = useState(null);
+    const [userStatusMessage, setUserStatusMessage] = useState(null);
 
     const [isLoaded, setIsLoaded] = useState(false); 
     const nav = useNavigate(); 
@@ -31,6 +33,20 @@ const IsomorphicGraph = () => {
                 console.log("API error:", error);
             });
     }, [filledId]); 
+
+    useEffect(() => {
+        axios.post('http://localhost:8000/valid_user', {
+            voter_id: filledId
+        })
+            .then((response) => {
+                console.log(response.data);
+                setUserStatus(response.data['status']);
+                setUserStatusMessage(response.data['message']);
+            })
+            .catch((error) => {
+                console.log("API error:", error);
+            });
+    }, [filledId]);
 
     return (
         <div>
@@ -59,7 +75,7 @@ const IsomorphicGraph = () => {
                                 <GraphView className='IsoGraph' {...{ nodes: nodes2, edges: edges2, numGraph: 2 }} />            
                             </div>
                             <>
-                                <ProverGraph {...{PIfunc: PIfunc, nodes1: nodes1, userID : Id}}/>
+                                <ProverGraph {...{PIfunc: PIfunc, nodes1: nodes1, userID : Id, userStatus: userStatus, userStatusMessage: userStatusMessage}}/>
                             </>
                         </>
                     ) : (
@@ -72,9 +88,21 @@ const IsomorphicGraph = () => {
             </div>  
             ) : (
                 <div className='idForm'>
+                    <IconButton
+                    onClick={() => nav('/')} 
+                    style={{
+                        position: 'fixed', 
+                        top: '20px',
+                        left: '20px',
+                        color: '#495057', 
+                        zIndex: 10, 
+                    }}
+                >
+                    <HomeIcon fontSize="large" />
+                </IconButton>
                     <h1>Please Enter Your ID</h1>
                     <input type='number' id='filledId' onChange={(e) => setId(e.target.value)}/>
-                    <button onClick={() => setFilledId(Id)}>Submit</button>
+                    <button className='submit-btn' onClick={() => setFilledId(Id)}>Submit</button>
                 </div> 
             )}
         </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import democratsIcon from '../../assets/democrats-icon.png'; 
 import republicansIcon from '../../assets/republicans-icon.png';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Voting.css'
 
@@ -9,6 +9,7 @@ function Voting() {
 
     const [message, setMessage] = useState('')
 
+    const nav = useNavigate()
     const location = useLocation()
     const userID = location.state?.userID
 
@@ -21,6 +22,9 @@ function Voting() {
         )
             .then((response) => {
                 console.log(response.data)
+                if(response.data.status === 200) {
+                    nav('/SuccessVote', {state: {party: party}})
+                }
                 setMessage(response.data.message)
             })
             .catch((error) => {

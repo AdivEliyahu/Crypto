@@ -1,0 +1,44 @@
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vertically center */
+    align-items: center; /* Horizontally center */
+    width: 100%; /* Make sure the container takes full width */
+    max-width: 1000px; /* Optional: maximum width for the chart */
+    margin: 20px auto; /* Center the container in the middle of the page */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+  }
+  
+  .chart-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 20px; /* Spacing between the title and the chart */
+    text-align: center;
+    color: #666;
+    position: absolute;
+    top:10%;
+  }
+  
+  @media (max-width: 768px) {
+    .chart-container {
+      padding: 15px; /* Reduce padding on smaller screens */
+    }
+  
+    .chart-title {
+      font-size: 20px; /* Adjust font size on smaller screens */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .chart-container {
+      max-width: 100%; /* Ensure the chart takes full width on very small screens */
+    }
+  }
+  

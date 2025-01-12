@@ -24,11 +24,11 @@ export default function Home() {
         <div className="title"> CRYPTOGRAPHY </div>
         <div className="button-container">
             <div className="clickable-div option" onClick={() => handleClick('Isomorfphic Graph')}>
-                    Isomorphic Graph
+                    Final Part
             </div>
-            <div className="clickable-div option" onClick={() => handleClick('Diffie Hellman & AES')}>
-                    Diffie Hellman & AES
-            </div>
+            <div className="clickable-div option" onClick={() => handleClick('Result')}>
+                    Results
+            </div> 
         
         </div>
 

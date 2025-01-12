@@ -180,7 +180,29 @@ def get_voters(request):
     democrat_voters = center.objects.filter(choice='Democrat').values()           
 
     return JsonResponse({'republicansVoters': len(republican_voters),
-                         'democratsVoters': len(democrat_voters)})
+                         'democratsVoters': len(democrat_voters),
+                         'yetVoted': 45 - len(republican_voters) - len(democrat_voters)})
+
+
+@require_POST
+@csrf_exempt
+def valid_user(request):
+    from .models import voters
+    try:
+        data = json.loads(request.body)
+        voter_id = data.get('voter_id')
+
+        voter = voters.objects.filter(id=voter_id).values().first()
+        if not voter:
+            return JsonResponse({'message': 'Voter not found.', 'status': 404})
+        
+        if voter['has_vote']:
+            return JsonResponse({'message': 'This voter has already voted.', 'status': 201})
+
+        return JsonResponse({'message': 'This voter is registered.', 'status': 200})
+
+    except Exception as e:
+        return JsonResponse({'message': 'Error checking the voter.', 'error': str(e), 'status': 500})
 
 
 @require_POST
@@ -194,22 +216,20 @@ def vote(request):
 
         voter = voters.objects.filter(id=voter_id).values().first()
         if not voter:
-            return JsonResponse({'message': 'Voter not found.'})
+            return JsonResponse({'message': 'Voter not found.', 'status': 404})
 
         center_id = voter['center_id']
 
         if voter['has_vote']:
-            return JsonResponse({'message': 'This voter has already voted.'})
+            return JsonResponse({'message': 'This voter has already voted.', 'status': 201})
 
         center_instance = center.objects.filter(center_id=center_id, choice='None').first()
         if center_instance:
             center_instance.choice = choice
             center_instance.save()
-            print('saved')
+            voters.objects.filter(id=voter_id).update(has_vote=True)
 
-        voters.objects.filter(id=voter_id).update(has_vote=True)
-
-        return JsonResponse({'message': 'The vote was successfully registered.'})
+        return JsonResponse({'message': 'The vote was successfully registered.', 'status': 200})
 
     except Exception as e:
-        return JsonResponse({'message': 'Error registering the vote.', 'error': str(e)})
+        return JsonResponse({'message': 'Error registering the vote.', 'error': str(e), 'status': 500})
