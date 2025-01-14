@@ -5,7 +5,8 @@ import axios from 'axios';
 import './Result.css';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { useNavigate } from 'react-router-dom';
-
+import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
 
 
 
@@ -13,6 +14,7 @@ function Result() {
     const [Democrats, setDemocrats] = useState(0);
     const [Republicans, setRepublicans] = useState(0);
     const [YetVoted, setYetVoted] = useState(0);
+    const [loading, setLoading] = useState(true);
 
     const nav = useNavigate();
 
@@ -33,10 +35,21 @@ function Result() {
             setDemocrats(response.data.democratsVoters);
             setRepublicans(response.data.republicansVoters);
             setYetVoted(response.data.yetVoted);
+            setTimeout(() => {
+                setLoading(false);
+            }, 700);
+            
         });
     }, []);
 
     return (
+        loading ? 
+        <div className='loading-bar'>
+            <div className='loading-bar-text'>Counting Votes..</div>
+            <Box sx={{ width: '100vh', height: '10px', mt: 3}}>
+            <LinearProgress color="inherit"/>
+            </Box>
+        </div> :
         <div className="container"> 
                 <IconButton
                     onClick={() => nav('/')} 

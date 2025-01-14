@@ -44,7 +44,7 @@ export default function KeyExchange() {
 
         setServerRSAkey(response.data['server_public_RSA']);
         
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        //await new Promise((resolve) => setTimeout(resolve, 3000));
 
         const generatedPrime = await bigintCryptoUtils.prime(128); //size of prime by bits
         setPrime(generatedPrime);
