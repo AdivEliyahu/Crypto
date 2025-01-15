@@ -192,7 +192,10 @@ def valid_user(request):
     from .models import voters
     try:
         data = json.loads(request.body)
-        voter_id = data.get('voter_id')
+        voter_id_encrypt = data.get('voter_id')
+
+        voter_id = decrypt(voter_id_encrypt)
+        print("voter is ",voter_id)
 
         voter = voters.objects.filter(id=voter_id).values().first()
         if not voter:
@@ -221,9 +224,6 @@ def vote(request):
 
         voter_id = decrypt(voter_id_encrypted)
         choice = decrypt(choice_encrypted)
-        
-        print(voter_id)
-        print(choice)
 
         voter = voters.objects.filter(id=voter_id).values().first()
         if not voter:
@@ -267,19 +267,16 @@ def decrypt(encrypted_text):
     :param encrypted_user_id: Base64-encoded encrypted userID
     :return: Decrypted userID as a string
     """
-    AES_KEY = os.getenv('SECRET')  # 32-byte key
-    AES_IV = AES_KEY[:16]  # First 16 bytes as IV
+    AES_KEY = os.getenv('SECRET')  
+    AES_IV = AES_KEY[:16]  
     try:
         # Decode the Base64-encoded encrypted string
         encrypted_data = base64.b64decode(encrypted_text)
         
-        # Initialize AES cipher for decryption
         cipher = AES.new(AES_KEY.encode('utf-8'), AES.MODE_CBC, AES_IV.encode('utf-8'))
         
-        # Decrypt and unpad the plaintext
         decrypted_data = unpad(cipher.decrypt(encrypted_data), AES.block_size)
-        
-        # Convert bytes to string
+
         return decrypted_data.decode('utf-8')
     
     except Exception as e:

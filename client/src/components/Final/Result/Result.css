@@ -3,8 +3,8 @@
     flex-direction: column;
     justify-content: center; /* Vertically center */
     align-items: center; /* Horizontally center */
-    width: 100%; /* Make sure the container takes full width */
-    max-width: 1000px; /* Optional: maximum width for the chart */
+    width: 80vh; /* Make sure the container takes full width */
+    max-width: 1500px; /* Optional: maximum width for the chart */
     margin: 20px auto; /* Center the container in the middle of the page */
     padding: 20px;
     border-radius: 8px;
@@ -17,7 +17,7 @@
   }
   
   .chart-title {
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: bold;
     margin-bottom: 20px; /* Spacing between the title and the chart */
     text-align: center;
@@ -41,6 +41,7 @@
     text-align: center;
     color: #444;
   }
+
 
   @media (max-width: 768px) {
     .chart-container {

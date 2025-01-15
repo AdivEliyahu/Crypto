@@ -12,8 +12,8 @@ function Voting() {
     const location = useLocation();
     const userID = location.state?.userID;
 
-    const AES_KEY = sessionStorage.getItem('sharedSecret'); // Replace with your 32-byte key
-    const AES_IV = AES_KEY.slice(0, 16); // First 16 bytes of the key
+    const AES_KEY = sessionStorage.getItem('sharedSecret'); 
+    const AES_IV = AES_KEY.slice(0, 16); 
 
     const encrypt = (text) => {
         const encrypted = CryptoJS.AES.encrypt(text, CryptoJS.enc.Utf8.parse(AES_KEY), {
@@ -25,16 +25,16 @@ function Voting() {
     };
 
     const handleVote = (party) => { 
-        if (!userID) {
-            setMessage('User ID is missing!');
+        if (!userID || !party) {
+            setMessage('Data missing!');
             return;
         }
 
         const encryptedUserID = encrypt(userID);
         const encryptedChoice = encrypt(party);
 
-        console.log(`(encrypted: user ${userID}) voted for ${party}`);
-        console.log(`(encrypted: user ${encryptedUserID}) voted for ${encryptedChoice}`);
+        console.log(`(encrypted: user ID ${userID}) voted for ${party}`); // just to see the data in the console
+        console.log(`(encrypted: user ID ${encryptedUserID}) voted for ${encryptedChoice}`); // encrypted data
 
         axios.post('http://localhost:8000/vote', { 
             voter_id: encryptedUserID,

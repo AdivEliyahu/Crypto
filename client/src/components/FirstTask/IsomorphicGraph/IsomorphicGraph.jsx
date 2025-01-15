@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import './IsomorphicGraph.css';
 import CryptoJS from 'crypto-js';
 
+
 const IsomorphicGraph = (props) => { 
     const [nodes1, setNodes1] = useState([]);
     const [nodes2, setNodes2] = useState([]);
@@ -35,9 +36,25 @@ const IsomorphicGraph = (props) => {
             });
     }, [filledId]); 
 
+
+
+    const AES_KEY = sessionStorage.getItem('sharedSecret'); 
+    const AES_IV = AES_KEY.slice(0, 16); 
+    const encrypt = (text) => {
+            const encrypted = CryptoJS.AES.encrypt(text, CryptoJS.enc.Utf8.parse(AES_KEY), {
+                iv: CryptoJS.enc.Utf8.parse(AES_IV),
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Pkcs7,
+            });
+            return encrypted.toString();
+        };
+
+    const filledIdEncrypted = encrypt(filledId);
+
     useEffect(() => {
+        if (!filledIdEncrypted) return;
         axios.post('http://localhost:8000/valid_user', {
-            voter_id: filledId,
+            voter_id: filledIdEncrypted,
         })
             .then((response) => {
                 console.log(response.data);
@@ -47,7 +64,7 @@ const IsomorphicGraph = (props) => {
             .catch((error) => {
                 console.log("API error:", error);
             });
-    }, [filledId]); 
+    }, [filledId,filledIdEncrypted]); 
 
     //setting up the key exchange
     useEffect(() => { 

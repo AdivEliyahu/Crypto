@@ -68,12 +68,12 @@ function Result() {
             <PieChart
             series={[
                 {
-                outerRadius: 250,
+                outerRadius: '90%',
                 arcLabel: getLabel,
                 data,
                 },
             ]}
-            height={500}
+            height={400}
 
             />
             </div>
