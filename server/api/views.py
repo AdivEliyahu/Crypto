@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives import hashes
 import base64
 
 #~~~~~~~~~~~~~~~~~~TASK 1~~~~~~~~~~~~~~~~~~~~~~#
-
+load_dotenv()
 # Real Graph
 nodes1 = [1,2,3,4,5,6]
 edges1 = [[1, 2], [1, 3], [5, 4], [4, 1], [5, 2], [3, 2], [2, 6]]
@@ -109,7 +109,7 @@ def key_exchange_set_up(request):
         os.environ['BOB_PRIVATE'] = str(random.randint(1, prime - 1))
         public_key_bob = str(pow(alpha, int(os.environ['BOB_PRIVATE']), prime))
 
-        os.environ["SECRET"] = str(pow(alice_public, int(os.environ['BOB_PRIVATE']), prime))
+        os.environ["SECRET"] = str(pow(alice_public, int(os.environ['BOB_PRIVATE']), prime))[:32]
 
         client_public_RSA_pem = os.getenv("CLIENT_PUBLIC_RSA")
         client_public_key = serialization.load_pem_public_key(client_public_RSA_pem.encode("utf-8"))
@@ -125,7 +125,7 @@ def key_exchange_set_up(request):
         encrypted_bob_key_base64 = base64.b64encode(encrypted_bob_key).decode("utf-8")
 
         secret = os.environ["SECRET"] # just for debug
-        print(f"The shared secret is: {secret}")
+        print(f"The shared secret is: {secret} key length: {len(secret)}")
 
         return JsonResponse({
             "message": "The server calculated the shared secret.",
@@ -213,9 +213,17 @@ def vote(request):
     '''vote registers the vote of the voter'''
     from .models import voters, center
     try:
+        
         data = json.loads(request.body)
-        voter_id = data.get('voter_id')
-        choice = data.get('choice')
+ 
+        voter_id_encrypted = data.get('voter_id')
+        choice_encrypted = data.get('choice')
+
+        voter_id = decrypt(voter_id_encrypted)
+        choice = decrypt(choice_encrypted)
+        
+        print(voter_id)
+        print(choice)
 
         voter = voters.objects.filter(id=voter_id).values().first()
         if not voter:
@@ -237,6 +245,53 @@ def vote(request):
     except Exception as e:
         return JsonResponse({'message': 'Error registering the vote.', 'error': str(e), 'status': 500})
     
+        
+
+
+
+
+# Function to decrypt AES data
+import os
+from dotenv import load_dotenv
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+import base64
+
+
+
+
+def decrypt(encrypted_text):
+    """
+    Decrypts the AES-encrypted userID.
+    
+    :param encrypted_user_id: Base64-encoded encrypted userID
+    :return: Decrypted userID as a string
+    """
+    AES_KEY = os.getenv('SECRET')  # 32-byte key
+    AES_IV = AES_KEY[:16]  # First 16 bytes as IV
+    try:
+        # Decode the Base64-encoded encrypted string
+        encrypted_data = base64.b64decode(encrypted_text)
+        
+        # Initialize AES cipher for decryption
+        cipher = AES.new(AES_KEY.encode('utf-8'), AES.MODE_CBC, AES_IV.encode('utf-8'))
+        
+        # Decrypt and unpad the plaintext
+        decrypted_data = unpad(cipher.decrypt(encrypted_data), AES.block_size)
+        
+        # Convert bytes to string
+        return decrypted_data.decode('utf-8')
+    
+    except Exception as e:
+        print(f"Decryption failed: {e}")
+        return None
+
+
+
+
+
+
+
 @require_POST
 @csrf_exempt
 def rest_db(request):
@@ -301,3 +356,4 @@ def rest_db(request):
     except Exception as e:
         print(e)
         return JsonResponse({'message': 'Error restarting the database.', 'error': str(e), 'status': 500})
+

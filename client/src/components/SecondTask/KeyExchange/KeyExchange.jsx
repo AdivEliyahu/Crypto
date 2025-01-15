@@ -44,8 +44,6 @@ export default function KeyExchange() {
       });
 
         setServerRSAkey(response.data['server_public_RSA']);
-        
-        //await new Promise((resolve) => setTimeout(resolve, 3000));
 
         const generatedPrime = await bigintCryptoUtils.prime(128); //size of prime by bits
         setPrime(generatedPrime);
@@ -114,7 +112,7 @@ export default function KeyExchange() {
       const bobPublicKey = BigInt(bobPublicKeyDecrypted);
 
       // eslint-disable-next-line no-undef
-      sessionStorage.setItem('sharedSecret', bigintCryptoUtils.modPow(bobPublicKey ,BigInt(sessionStorage.getItem('privateKeyAlice')), prime).toString());
+      sessionStorage.setItem('sharedSecret', bigintCryptoUtils.modPow(bobPublicKey ,BigInt(sessionStorage.getItem('privateKeyAlice')), prime).toString().slice(0, 32));
 
     } catch (error) {
       console.error("API error:", error);

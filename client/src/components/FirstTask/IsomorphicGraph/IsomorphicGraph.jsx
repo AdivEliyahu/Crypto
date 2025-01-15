@@ -6,6 +6,7 @@ import { IconButton } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from 'react-router-dom';
 import './IsomorphicGraph.css';
+import CryptoJS from 'crypto-js';
 
 const IsomorphicGraph = (props) => { 
     const [nodes1, setNodes1] = useState([]);
@@ -36,7 +37,7 @@ const IsomorphicGraph = (props) => {
 
     useEffect(() => {
         axios.post('http://localhost:8000/valid_user', {
-            voter_id: filledId
+            voter_id: filledId,
         })
             .then((response) => {
                 console.log(response.data);
