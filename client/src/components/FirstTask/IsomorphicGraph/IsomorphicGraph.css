@@ -39,7 +39,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh; /* Center content vertically and horizontally */
+    height: 100vh;
+    width: 100vh; 
     background-color: #f8f9fa; /* Light background for better contrast */
     font-family: Arial, sans-serif; /* Clean and readable font */
     color: #343a40; /* Dark text color */

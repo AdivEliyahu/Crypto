@@ -5,11 +5,12 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Box from '@mui/material/Box';
 import forge from 'node-forge';
 import './KeyExchange.css'; 
+import IsomorficGraph from '../../FirstTask/IsomorphicGraph/IsomorphicGraph';
 
 export default function KeyExchange() {
   const [alpha, setAlpha] = useState(null);
   const [prime, setPrime] = useState(null);
-  const [validSetUp, setValidSetUp] = useState(false); 
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const [publicRSAkey, setPublicRSAkey] = useState(null);
@@ -25,6 +26,7 @@ export default function KeyExchange() {
     };
 
     generateRSAKeys();
+    setLoading(false);
   }, []); 
   
 
@@ -69,7 +71,6 @@ export default function KeyExchange() {
     }
 
     try {
-    
       sessionStorage.setItem('privateKeyAlice', bigintCryptoUtils.randBetween(prime - 1n, 1n).toString());
 
       // eslint-disable-next-line no-undef
@@ -115,7 +116,6 @@ export default function KeyExchange() {
       // eslint-disable-next-line no-undef
       sessionStorage.setItem('sharedSecret', bigintCryptoUtils.modPow(bobPublicKey ,BigInt(sessionStorage.getItem('privateKeyAlice')), prime).toString());
 
-      setValidSetUp(true);
     } catch (error) {
       console.error("API error:", error);
       setError("Failed to complete key exchange");
@@ -126,11 +126,10 @@ export default function KeyExchange() {
 
   return (
     <div className="key-exchange-container">
-      {!validSetUp ? (
         <div>
           {error && <div className="error">{error}</div>}
-          {prime && alpha ? (
-            <button onClick={keyExchange}>Start Key Exchange</button>
+          {prime && alpha && !loading ? (
+            <IsomorficGraph keyExchange={keyExchange} />
           ) : (
             <div className='loading-bar'>
               <div className='loading-bar-text'>Generating secure parameters...</div>
@@ -140,16 +139,7 @@ export default function KeyExchange() {
             </div>
  
           )}
-        </div>
-      ) : (
-        <div className='secure-chat'>
-          <div className='success-container'>
-            <h1 className="success-message">Key Exchange Successful!</h1>
-            <p>Your Secret Is {sessionStorage.getItem('sharedSecret')}</p>
-          </div>
-        </div>
-      )}
-      
+        </div> 
     </div>
   );
 }

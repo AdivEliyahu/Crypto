@@ -7,7 +7,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from 'react-router-dom';
 import './IsomorphicGraph.css';
 
-const IsomorphicGraph = () => { 
+const IsomorphicGraph = (props) => { 
     const [nodes1, setNodes1] = useState([]);
     const [nodes2, setNodes2] = useState([]);
     const [edges2, setEdges2] = useState([]);
@@ -46,7 +46,13 @@ const IsomorphicGraph = () => {
             .catch((error) => {
                 console.log("API error:", error);
             });
-    }, [filledId]);
+    }, [filledId]); 
+
+    //setting up the key exchange
+    useEffect(() => { 
+        console.log('props are', props);
+        props.keyExchange();
+    },[props]);
 
     return (
         <div>
