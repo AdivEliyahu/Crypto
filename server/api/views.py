@@ -175,6 +175,7 @@ def decrypt_message(private_key, encrypted_message):
 #~~~~~~~~~~~~~~~~~~ Final Task ~~~~~~~~~~~~~~~~~~~~~~#
 @require_GET
 def get_voters(request):
+    '''get_voters return the number of voters who voted for each party and the number of voters who have not voted yet'''
     from .models import center;
     republican_voters = center.objects.filter(choice='Republican').values()
     democrat_voters = center.objects.filter(choice='Democrat').values()           
@@ -187,6 +188,7 @@ def get_voters(request):
 @require_POST
 @csrf_exempt
 def valid_user(request):
+    '''valid_user checks if the voter is registered and has not voted yet'''
     from .models import voters
     try:
         data = json.loads(request.body)
@@ -208,6 +210,7 @@ def valid_user(request):
 @require_POST
 @csrf_exempt
 def vote(request):
+    '''vote registers the vote of the voter'''
     from .models import voters, center
     try:
         data = json.loads(request.body)
@@ -221,7 +224,7 @@ def vote(request):
         center_id = voter['center_id']
 
         if voter['has_vote']:
-            return JsonResponse({'message': 'This voter has already voted.', 'status': 201})
+            return JsonResponse({'message': 'This voter has already voted.', 'status': 401})
 
         center_instance = center.objects.filter(center_id=center_id, choice='None').first()
         if center_instance:
@@ -233,3 +236,68 @@ def vote(request):
 
     except Exception as e:
         return JsonResponse({'message': 'Error registering the vote.', 'error': str(e), 'status': 500})
+    
+@require_POST
+@csrf_exempt
+def rest_db(request):
+    '''restart_db restarts the database'''
+    from .models import center, voters
+    try:
+        
+        print("Clearing existing data...")
+        voters.objects.all().delete()
+        center.objects.all().delete()
+        print("Data cleared.")
+
+        centers_data = [
+            {"center_id": "101", "choices": [
+                "Republican", "Democrat", "Democrat", "Republican", "None",
+                "Republican", "Democrat", "Democrat", "Republican", "None",
+                "Republican", "Democrat", "Republican", "Republican", "Republican"
+            ]},
+            {"center_id": "102", "choices": [
+                "Republican", "Democrat", "Democrat", "Republican", "None",
+                "Republican", "Democrat", "Democrat", "Republican", "None",
+                "Republican", "Democrat", "Democrat", "Democrat", "Democrat"
+            ]},
+            {"center_id": "103", "choices": [
+                "Republican", "Democrat", "Democrat", "Republican", "None",
+                "Republican", "Democrat", "Democrat", "Republican", "Republican",
+                "Republican", "Democrat", "Democrat", "Democrat", "Republican"
+            ]},
+        ]
+
+        for center_data in centers_data:
+            center_id = center_data["center_id"]
+            for choice in center_data["choices"]:
+                center.objects.create(center_id=center_id, choice=choice)
+
+        voters_data = [
+            {"center_id": "101", "voters": [
+                (0, True), (1, True), (2, True), (3, True), (4, False),
+                (5, True), (6, True), (7, True), (8, True), (9, False),
+                (10, True), (11, True), (12, True), (13, True), (14, True)
+            ]},
+            {"center_id": "102", "voters": [
+                (15, True), (16, True), (17, True), (18, True), (19, False),
+                (20, True), (21, True), (22, True), (23, True), (24, False),
+                (25, True), (26, True), (27, True), (28, True), (29, True)
+            ]},
+            {"center_id": "103", "voters": [
+                (30, True), (31, True), (32, True), (33, True), (34, False),
+                (35, True), (36, True), (37, True), (38, True), (39, True),
+                (40, True), (41, True), (42, True), (43, True), (44, True)
+            ]},
+        ]
+
+        for voter_group in voters_data:
+            center_id = voter_group["center_id"]
+            for voter_id, has_vote in voter_group["voters"]:
+                voters.objects.create(id=voter_id, center_id=center_id, has_vote=has_vote)
+
+        print("Data insertion complete.")
+
+        return JsonResponse({'message': 'The database was restarted.', 'status': 200})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'message': 'Error restarting the database.', 'error': str(e), 'status': 500})

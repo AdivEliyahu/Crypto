@@ -38,7 +38,6 @@ export default function KeyExchange() {
       }, {
           headers: {
               'Content-Type': 'application/json',
-
           }
       });
 

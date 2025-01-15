@@ -14,7 +14,17 @@ export default function Home() {
     }
 
 
-
+    const restDB = async () => {
+        const response = await fetch('http://localhost:8000/rest_db', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        });
+        const data = await response.json();
+        console.log(data['message']);
+    };
 
 
   return (
@@ -29,6 +39,9 @@ export default function Home() {
             <div className="clickable-div option" onClick={() => handleClick('Result')}>
                     Results
             </div> 
+            <div className="clickable-div option" onClick={() => restDB('rest db')}>
+                    rest db
+            </div>
         
         </div>
 
