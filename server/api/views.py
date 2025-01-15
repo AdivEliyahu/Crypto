@@ -195,7 +195,6 @@ def valid_user(request):
         voter_id_encrypt = data.get('voter_id')
 
         voter_id = decrypt(voter_id_encrypt)
-        print("voter is ",voter_id)
 
         voter = voters.objects.filter(id=voter_id).values().first()
         if not voter:
