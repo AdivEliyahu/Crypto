@@ -16,6 +16,8 @@ export default function KeyExchange() {
   const [publicRSAkey, setPublicRSAkey] = useState(null);
   const [serverRSAkey, setServerRSAkey] = useState(null);
 
+
+
   useEffect(() => {
     const generateRSAKeys = () => {
       const { privateKey, publicKey } = forge.pki.rsa.generateKeyPair(2048);
@@ -130,7 +132,7 @@ export default function KeyExchange() {
             <IsomorficGraph keyExchange={keyExchange} />
           ) : (
             <div className='loading-bar'>
-              <div className='loading-bar-text'>Generating secure parameters...</div>
+              <div className='loading-bar-text'>Generating secure parameters..</div>
               <Box sx={{ width: '100vh', height: '10px', mt: 3}}>
                 <LinearProgress color="inherit"/>
               </Box>

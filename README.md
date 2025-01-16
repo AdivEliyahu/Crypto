@@ -1,5 +1,5 @@
 # Project 
-   Course Project
+   In this project, I simulated a voting system for elections in the United States with an emphasis on cryptography methods such as Diffie-Hellman and ZKP.
 
 
 ## Prerequisites
@@ -49,6 +49,7 @@ Before running the project, ensure you have the following installed:
       DATABASE_NAME=your_database_name
       DATABASE_USER=your_username
       DATABASE_PASSWORD=your_password
+      DB_KEY=your_32byte_key
    ```
 6. Run the Django server:
    ```bash

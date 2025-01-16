@@ -22,6 +22,10 @@ const IsomorphicGraph = (props) => {
     const [isLoaded, setIsLoaded] = useState(false); 
     const nav = useNavigate(); 
 
+    useEffect(() => { 
+        props.keyExchange();
+    },[props]);
+
     useEffect(() => {
         axios.get('http://localhost:8000/get_graphs')
             .then((response) => {
@@ -36,11 +40,13 @@ const IsomorphicGraph = (props) => {
             });
     }, [filledId]); 
 
-
-
-    const AES_KEY = sessionStorage.getItem('sharedSecret'); 
-    const AES_IV = AES_KEY.slice(0, 16); 
     const encrypt = (text) => {
+        
+            if (!sessionStorage.getItem('sharedSecret')) {
+                return;
+            }
+            const AES_KEY = sessionStorage.getItem('sharedSecret'); 
+            const AES_IV = AES_KEY.slice(0, 16); 
             const encrypted = CryptoJS.AES.encrypt(text, CryptoJS.enc.Utf8.parse(AES_KEY), {
                 iv: CryptoJS.enc.Utf8.parse(AES_IV),
                 mode: CryptoJS.mode.CBC,
@@ -67,10 +73,7 @@ const IsomorphicGraph = (props) => {
     }, [filledId,filledIdEncrypted]); 
 
     //setting up the key exchange
-    useEffect(() => { 
-        console.log('props are', props);
-        props.keyExchange();
-    },[props]);
+
 
     return (
         <div>

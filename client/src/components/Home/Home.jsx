@@ -13,9 +13,9 @@ export default function Home() {
     
     const handleClick = async (navTo) => { 
       setLoading(true); 
-      await new Promise((resolve) => setTimeout(resolve, 700)); // Simulate small delay if needed
-      nav(navTo);
+      await new Promise((resolve) => setTimeout(resolve, 700)); 
       setLoading(false); 
+      nav(navTo);
     }
 
 
@@ -42,7 +42,7 @@ export default function Home() {
       <div className="container">
           {loading ? (
             <div className='loading-bar'>
-              <div className='loading-bar-text'>Couple more seconds...</div>
+              <div className='loading-bar-text'>Couple more seconds..</div>
               <Box sx={{ width: '100vh', height: '10px', mt: 3}}>
                 <LinearProgress color="inherit"/>
               </Box>

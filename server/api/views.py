@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
+from cryptography.fernet import Fernet
 import base64
 
 #~~~~~~~~~~~~~~~~~~TASK 1~~~~~~~~~~~~~~~~~~~~~~#
@@ -178,7 +179,15 @@ def get_voters(request):
     '''get_voters return the number of voters who voted for each party and the number of voters who have not voted yet'''
     from .models import center;
     republican_voters = center.objects.filter(choice='Republican').values()
-    democrat_voters = center.objects.filter(choice='Democrat').values()           
+    democrat_voters = center.objects.filter(choice='Democrat').values()  
+
+    test = "this is a test"
+    print("test begin here")
+    enc_text =db_enc(test)
+    print("enc: ",enc_text)
+    dec_text = db_dec(enc_text)
+    print("dec: ",dec_text)
+
 
     return JsonResponse({'republicansVoters': len(republican_voters),
                          'democratsVoters': len(democrat_voters),
@@ -281,6 +290,33 @@ def decrypt(encrypted_text):
     except Exception as e:
         print(f"Decryption failed: {e}")
         return None
+
+
+
+
+
+def db_enc(text):
+    # Load the key and ensure it is base64-encoded
+    key = os.environ['DB_KEY']
+    if isinstance(key, str):  # Check if it's a string
+        key = key.encode()  # Convert to bytes
+    fernet_key = base64.urlsafe_b64encode(key[:32])  # Ensure 32 bytes
+    fernet = Fernet(fernet_key)
+    encrypted_text = fernet.encrypt(text.encode())
+    return encrypted_text.decode()
+
+def db_dec(encrypted_text):
+    # Load the key and ensure it is base64-encoded
+    key = os.environ['DB_KEY']
+    if isinstance(key, str):  # Check if it's a string
+        key = key.encode()  # Convert to bytes
+    fernet_key = base64.urlsafe_b64encode(key[:32])  # Ensure 32 bytes
+    fernet = Fernet(fernet_key)
+    decrypted_text = fernet.decrypt(encrypted_text.encode())
+    return decrypted_text.decode()
+
+
+
 
 
 
