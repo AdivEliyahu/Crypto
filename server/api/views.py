@@ -10,7 +10,11 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import base64
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+
 
 #~~~~~~~~~~~~~~~~~~TASK 1~~~~~~~~~~~~~~~~~~~~~~#
 load_dotenv()
@@ -35,7 +39,7 @@ def get_graphs(request):
 def get_random_nodes(request): 
     num_nodes_to_select = int(len(nodes2) * 0.9)  
     selected_nodes = random.sample(nodes2, num_nodes_to_select)
-    print(f'[Status] number of nodes sent to user: {len(selected_nodes)}.')
+
 
     return JsonResponse({'randNodes': selected_nodes})
 
@@ -56,16 +60,13 @@ def check_edges(request):
 
 
     if len(normalized_node_edges) != len(normalized_input_edges):
-            print(f'[Status] user was wrong (node: {node}).')
             return JsonResponse({'message': False})
 
     
     for edge in normalized_node_edges:
         if edge not in normalized_input_edges:
-                print(f'[Status] user was wrong (node: {node}).')
                 return JsonResponse({'message': False})
 
-    print(f'[Status] user was right (node: {node}).')
     
     return JsonResponse({'message': True})
 
@@ -178,15 +179,9 @@ def decrypt_message(private_key, encrypted_message):
 def get_voters(request):
     '''get_voters return the number of voters who voted for each party and the number of voters who have not voted yet'''
     from .models import center;
-    republican_voters = center.objects.filter(choice='Republican').values()
-    democrat_voters = center.objects.filter(choice='Democrat').values()  
+    republican_voters = center.objects.filter(choice=db_enc('Republican')).values()
+    democrat_voters = center.objects.filter(choice=db_enc('Democrat')).values()  
 
-    test = "this is a test"
-    print("test begin here")
-    enc_text =db_enc(test)
-    print("enc: ",enc_text)
-    dec_text = db_dec(enc_text)
-    print("dec: ",dec_text)
 
 
     return JsonResponse({'republicansVoters': len(republican_voters),
@@ -204,8 +199,10 @@ def valid_user(request):
         voter_id_encrypt = data.get('voter_id')
 
         voter_id = decrypt(voter_id_encrypt)
+ 
+        enc_voter_id_db = db_enc(voter_id)
 
-        voter = voters.objects.filter(id=voter_id).values().first()
+        voter = voters.objects.filter(id=enc_voter_id_db).values().first()
         if not voter:
             return JsonResponse({'message': 'Voter not found.', 'status': 404})
         
@@ -233,7 +230,10 @@ def vote(request):
         voter_id = decrypt(voter_id_encrypted)
         choice = decrypt(choice_encrypted)
 
-        voter = voters.objects.filter(id=voter_id).values().first()
+        enc_voter_id_db = db_enc(voter_id)
+        enc_choice_db = db_enc(choice)
+
+        voter = voters.objects.filter(id=enc_voter_id_db).values().first()
         if not voter:
             return JsonResponse({'message': 'Voter not found.', 'status': 404})
 
@@ -242,29 +242,69 @@ def vote(request):
         if voter['has_vote']:
             return JsonResponse({'message': 'This voter has already voted.', 'status': 401})
 
-        center_instance = center.objects.filter(center_id=center_id, choice='None').first()
+        center_instance = center.objects.filter(center_id=center_id, choice=db_enc('None')).first()
         if center_instance:
-            center_instance.choice = choice
+            center_instance.choice = enc_choice_db
             center_instance.save()
-            voters.objects.filter(id=voter_id).update(has_vote=True)
+            voters.objects.filter(id=enc_voter_id_db).update(has_vote=True)
 
         return JsonResponse({'message': 'The vote was successfully registered.', 'status': 200})
 
     except Exception as e:
         return JsonResponse({'message': 'Error registering the vote.', 'error': str(e), 'status': 500})
     
+
+# below encryption decryption functions for db
+def db_enc(text):
+    if isinstance(text, int):
+        text = str(text)
+
+    key = os.environ['DB_KEY']
+    if isinstance(key, str):  
+        key = key.encode()  
+
+    key_bytes = base64.b64decode(key)
+
+    h = hashes.Hash(hashes.SHA256())
+    h.update(key_bytes + text.encode())
+    iv = h.finalize()[:16]  
+    
+    cipher = Cipher(algorithms.AES(key_bytes), modes.CBC(iv))
+    encryptor = cipher.encryptor()
+    
+    padding_length = 16 - (len(text.encode()) % 16)
+    padded_text = text.encode() + bytes([padding_length] * padding_length)
+    
+    ciphertext = encryptor.update(padded_text) + encryptor.finalize()
+    
+    return base64.b64encode(iv + ciphertext).decode()
+
+def db_dec(encrypted_text):
+    key = os.environ['DB_KEY']
+    if isinstance(key, str):  
+        key = key.encode()
+
+    try:
+        key_bytes = base64.b64decode(key)
         
-
-
-
-
-# Function to decrypt AES data
-import os
-from dotenv import load_dotenv
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import unpad
-import base64
-
+        full_data = base64.b64decode(encrypted_text)
+        
+        iv = full_data[:16]
+        ciphertext = full_data[16:]
+        
+        cipher = Cipher(algorithms.AES(key_bytes), modes.CBC(iv))
+        decryptor = cipher.decryptor()
+        
+        padded_text = decryptor.update(ciphertext) + decryptor.finalize()
+        
+        padding_length = padded_text[-1]
+        text = padded_text[:-padding_length]
+        
+        return text.decode()
+    
+    except Exception as e:
+        print(f"Decryption error: {e}")
+        return None
 
 
 
@@ -290,36 +330,6 @@ def decrypt(encrypted_text):
     except Exception as e:
         print(f"Decryption failed: {e}")
         return None
-
-
-
-
-
-def db_enc(text):
-    # Load the key and ensure it is base64-encoded
-    key = os.environ['DB_KEY']
-    if isinstance(key, str):  # Check if it's a string
-        key = key.encode()  # Convert to bytes
-    fernet_key = base64.urlsafe_b64encode(key[:32])  # Ensure 32 bytes
-    fernet = Fernet(fernet_key)
-    encrypted_text = fernet.encrypt(text.encode())
-    return encrypted_text.decode()
-
-def db_dec(encrypted_text):
-    # Load the key and ensure it is base64-encoded
-    key = os.environ['DB_KEY']
-    if isinstance(key, str):  # Check if it's a string
-        key = key.encode()  # Convert to bytes
-    fernet_key = base64.urlsafe_b64encode(key[:32])  # Ensure 32 bytes
-    fernet = Fernet(fernet_key)
-    decrypted_text = fernet.decrypt(encrypted_text.encode())
-    return decrypted_text.decode()
-
-
-
-
-
-
 
 
 
@@ -357,30 +367,30 @@ def rest_db(request):
         for center_data in centers_data:
             center_id = center_data["center_id"]
             for choice in center_data["choices"]:
-                center.objects.create(center_id=center_id, choice=choice)
+                center.objects.create(center_id=db_enc(center_id), choice=db_enc(choice))
 
         voters_data = [
             {"center_id": "101", "voters": [
-                (0, True), (1, True), (2, True), (3, True), (4, False),
-                (5, True), (6, True), (7, True), (8, True), (9, False),
-                (10, True), (11, True), (12, True), (13, True), (14, True)
+                ('0', True), ('1', True), ('2', True), ('3', True), ('4', False),
+                ('5', True), ('6', True), ('7', True), ('8', True), ('9', False),
+                ('10', True), ('11', True), ('12', True), ('13', True), ('14', True)
             ]},
             {"center_id": "102", "voters": [
-                (15, True), (16, True), (17, True), (18, True), (19, False),
-                (20, True), (21, True), (22, True), (23, True), (24, False),
-                (25, True), (26, True), (27, True), (28, True), (29, True)
+                ('15', True), ('16', True), ('17', True), ('18', True), ('19', False),
+                ('20', True), ('21', True), ('22', True), ('23', True), ('24', False),
+                ('25', True), ('26', True), ('27', True), ('28', True), ('29', True)
             ]},
             {"center_id": "103", "voters": [
-                (30, True), (31, True), (32, True), (33, True), (34, False),
-                (35, True), (36, True), (37, True), (38, True), (39, True),
-                (40, True), (41, True), (42, True), (43, True), (44, True)
+                ('30', True), ('31', True), ('32', True), ('33', True), ('34', False),
+                ('35', True), ('36', True), ('37', True), ('38', True), ('39', True),
+                ('40', True), ('41', True), ('42', True), ('43', True), ('44', True)
             ]},
         ]
 
         for voter_group in voters_data:
             center_id = voter_group["center_id"]
             for voter_id, has_vote in voter_group["voters"]:
-                voters.objects.create(id=voter_id, center_id=center_id, has_vote=has_vote)
+                voters.objects.create(id=db_enc(voter_id), center_id=db_enc(center_id), has_vote=has_vote)
 
         print("Data insertion complete.")
 

@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import './IsomorphicGraph.css';
 import CryptoJS from 'crypto-js';
 
-
 const IsomorphicGraph = (props) => { 
     const [nodes1, setNodes1] = useState([]);
     const [nodes2, setNodes2] = useState([]);
@@ -18,6 +17,7 @@ const IsomorphicGraph = (props) => {
     const [filledId, setFilledId] = useState(null);
     const [userStatus, setUserStatus] = useState(null);
     const [userStatusMessage, setUserStatusMessage] = useState(null);
+    const [isSubmitted, setIsSubmitted] = useState(false); // Added state variable
 
     const [isLoaded, setIsLoaded] = useState(false); 
     const nav = useNavigate(); 
@@ -27,6 +27,7 @@ const IsomorphicGraph = (props) => {
     },[props]);
 
     useEffect(() => {
+        if (!isSubmitted) return; // Added condition
         axios.get('http://localhost:8000/get_graphs')
             .then((response) => {
                 setNodes1(response.data["nodes1"]);
@@ -38,27 +39,26 @@ const IsomorphicGraph = (props) => {
             .catch((error) => {
                 console.log("API error:", error);
             });
-    }, [filledId]); 
+    }, [isSubmitted]); // Changed dependency
 
     const encrypt = (text) => {
-        
-            if (!sessionStorage.getItem('sharedSecret')) {
-                return;
-            }
-            const AES_KEY = sessionStorage.getItem('sharedSecret'); 
-            const AES_IV = AES_KEY.slice(0, 16); 
-            const encrypted = CryptoJS.AES.encrypt(text, CryptoJS.enc.Utf8.parse(AES_KEY), {
-                iv: CryptoJS.enc.Utf8.parse(AES_IV),
-                mode: CryptoJS.mode.CBC,
-                padding: CryptoJS.pad.Pkcs7,
-            });
-            return encrypted.toString();
-        };
+        if (!sessionStorage.getItem('sharedSecret')) {
+            return;
+        }
+        const AES_KEY = sessionStorage.getItem('sharedSecret'); 
+        const AES_IV = AES_KEY.slice(0, 16); 
+        const encrypted = CryptoJS.AES.encrypt(text, CryptoJS.enc.Utf8.parse(AES_KEY), {
+            iv: CryptoJS.enc.Utf8.parse(AES_IV),
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7,
+        });
+        return encrypted.toString();
+    };
 
     const filledIdEncrypted = encrypt(filledId);
 
     useEffect(() => {
-        if (!filledIdEncrypted) return;
+        if (!isSubmitted || !filledIdEncrypted) return; // Added condition
         axios.post('http://localhost:8000/valid_user', {
             voter_id: filledIdEncrypted,
         })
@@ -70,15 +70,11 @@ const IsomorphicGraph = (props) => {
             .catch((error) => {
                 console.log("API error:", error);
             });
-    }, [filledId,filledIdEncrypted]); 
-
-    //setting up the key exchange
-
+    }, [isSubmitted, filledIdEncrypted]); // Changed dependency
 
     return (
         <div>
             {filledId ? (
-
             <div>
                 <IconButton
                     onClick={() => nav('/')} 
@@ -92,8 +88,6 @@ const IsomorphicGraph = (props) => {
                 >
                     <HomeIcon fontSize="large" />
                 </IconButton>
-                
-
                 <h1 className='title'>Isomorphic Graphs</h1>
                 <div className='isomorphicGraphs'> 
                     {isLoaded ? (
@@ -129,7 +123,7 @@ const IsomorphicGraph = (props) => {
                 </IconButton>
                     <h1>Please Enter Your ID</h1>
                     <input type='number' id='filledId' onChange={(e) => setId(e.target.value)}/>
-                    <button className='submit-btn' onClick={() => setFilledId(Id)}>Submit</button>
+                    <button className='submit-btn' onClick={() => { setFilledId(Id); setIsSubmitted(true); }}>Submit</button> {/* Added setIsSubmitted */}
                 </div> 
             )}
         </div>

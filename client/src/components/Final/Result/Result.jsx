@@ -19,8 +19,8 @@ function Result() {
     const nav = useNavigate();
 
     const data = [
-        { label: 'Democrats', value: Democrats, color: '#1976d2' },
-        { label: 'Repulicans', value: Republicans, color: '#dc004e' },
+        { label: 'Democrats', value: Democrats, color: '#1F51FF' },
+        { label: 'Repulicans', value: Republicans, color: '#FF5733' },
         { label: 'Yet Voted', value: YetVoted, color: '#CCC' },
     ];
 
@@ -95,11 +95,11 @@ function Result() {
         <h1>Final Results</h1>
         <h1>The Winner is {Democrats > Republicans ? 'Democrats' : 'Republicans'}</h1>
         <div className="results">
-            <div className="result">
+            <div className="result dem">
                 <h3>Democrats</h3>
                 <h4>{Democrats}</h4>
             </div>
-            <div className="result">
+            <div className="result rep">
                 <h3>Republicans</h3>
                 <h4>{Republicans}</h4>
             </div>

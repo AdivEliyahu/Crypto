@@ -80,8 +80,10 @@ const ProverGraph = (props) => {
         else if (currentNodeIndex === randNodes.length - 1 && isCorrect && !hadIncorrectAnswer) {
             if(userStatus === 200)
                 nav('/Voting', { state: { userID: props.userID } });
-            else 
+            else{ 
+                console.log(userStatus);
                 nav('/InvalidUser', { state: { userStatusMessage: userStatusMessage } });
+            }
         }
 
         
