@@ -8,6 +8,8 @@ urlpatterns = [
     path('get_public_RSA', get_public_RSA),
     path('get_voters', get_voters),
     path('vote', vote),
+    path('valid_user', valid_user),
+    path('rest_db', rest_db),
 
 
 ]

@@ -16,7 +16,9 @@ const ProverGraph = (props) => {
     const nav = useNavigate();
 
     const PIfunc = props['PIfunc'];
-    const nodes1 = props['nodes1']
+    const nodes1 = props['nodes1'];
+    const userStatus = props['userStatus'];
+    const userStatusMessage = props['userStatusMessage'];
 
     useEffect(() => {
         axios.get('http://localhost:8000/get_random_nodes')
@@ -76,7 +78,12 @@ const ProverGraph = (props) => {
         } 
 
         else if (currentNodeIndex === randNodes.length - 1 && isCorrect && !hadIncorrectAnswer) {
-            nav('/Voting', { state: { userID: props.userID } });
+            if(userStatus === 200)
+                nav('/Voting', { state: { userID: props.userID } });
+            else{ 
+                console.log(userStatus);
+                nav('/InvalidUser', { state: { userStatusMessage: userStatusMessage } });
+            }
         }
 
         

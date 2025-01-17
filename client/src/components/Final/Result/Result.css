@@ -1,0 +1,119 @@
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vertically center */
+    align-items: center; /* Horizontally center */
+    width: 80vh; /* Make sure the container takes full width */
+    max-width: 1500px; /* Optional: maximum width for the chart */
+    margin: 20px auto; /* Center the container in the middle of the page */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+  }
+  
+  .chart-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 20px; /* Spacing between the title and the chart */
+    text-align: center;
+    color: #666;
+    position: absolute;
+    top:10%;
+  }
+  
+  .loading-bar {
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .loading-bar-text{ 
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px; /* Spacing between the title and the chart */
+    text-align: center;
+    color: #444;
+  }
+
+
+  .endResults {
+    text-align: center;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+}
+
+.endResults h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.endResults h1:nth-child(2) {
+    font-weight: bold;
+}
+
+.results {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.result {
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    width: 40%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.dem{
+  background-color: #1F51FF;
+}
+.rep{
+  background-color: #FF5733;
+}
+
+.result h3 {
+    font-size: 1.5rem;
+    color: #f1f1f1;
+    margin-bottom: 10px;
+}
+
+.result h4 {
+    font-size: 1.25rem;
+    color: #f1f1f1;
+    font-weight: bold;
+}
+.endResults{
+  background-color: #f9f9f9;
+  width: 90vh;
+}
+
+
+  @media (max-width: 768px) {
+    .chart-container {
+      padding: 15px; /* Reduce padding on smaller screens */
+    }
+  
+    .chart-title {
+      font-size: 20px; /* Adjust font size on smaller screens */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .chart-container {
+      max-width: 100%; /* Ensure the chart takes full width on very small screens */
+    }
+  }
+  

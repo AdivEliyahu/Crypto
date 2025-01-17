@@ -34,11 +34,65 @@
 .title{ 
     text-align: center;
 }
-.idForm{ 
+.idForm {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    gap: 20px;
-    margin-top: 20px;
+    justify-content: center;
+    height: 100vh;
+    width: 100vh; 
+    background-color: #f8f9fa; /* Light background for better contrast */
+    font-family: Arial, sans-serif; /* Clean and readable font */
+    color: #343a40; /* Dark text color */
 }
+
+.idForm h1 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+    color: #495057; /* Slightly lighter text for the heading */
+}
+
+.idForm input {
+    width: 40%;
+    height: 1.5rem;
+    padding: 10px;
+    min-width: 300px;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    border: 0.1px solid #ced4da; /* Subtle border color */
+    border-radius: 5px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1); /* Slight inner shadow */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.idForm input:focus {
+    border-color: #80bdff; /* Highlight border on focus */
+    outline: none;
+    box-shadow: 0 0 5px rgba(128, 189, 255, 0.5); /* Soft blue glow */
+}
+
+.submit-btn {
+    width: 10%;
+    padding: 10px;
+    font-size: 1rem;
+    min-width: 100px;
+    height: 3.5rem;
+    color: #fff; /* White text */
+    background-color: #898f96; /* Bootstrap primary color */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.submit-btn:hover {
+    background-color: #3a4958; /* Darker blue on hover */
+    transform: scale(1.1); /* Slight zoom effect */
+}
+
+.submit-btn:active {
+    background-color: #004085; /* Even darker blue on click */
+    transform: scale(0.98); /* Slight compression effect */
+}
+
 

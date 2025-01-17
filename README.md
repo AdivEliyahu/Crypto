@@ -1,5 +1,5 @@
 # Project 
-   Course Project
+   In this project, I simulated a voting system for elections in the United States with an emphasis on cryptography methods such as Diffie-Hellman and ZKP.
 
 
 ## Prerequisites
@@ -11,6 +11,7 @@ Before running the project, ensure you have the following installed:
 - [pip](https://pip.pypa.io/en/stable/) (Python package installer)
 - [npm](https://www.npmjs.com/) (Node package manager)
 - [virtualenv](https://virtualenv.pypa.io/en/latest/) (for creating a virtual environment for Python)
+- [MySQL](https://www.mysql.com/downloads/) (for database management)
 
 ## Setup
 
@@ -38,9 +39,18 @@ Before running the project, ensure you have the following installed:
    ```bash
    python manage.py migrate
    ```
-5. Create .env file: 
+5. Create .env file in server folder: 
+   ```bash
    server
-   |____.env
+   |____.env 
+   ```
+6. Add Database connection info to .env file:
+   ```bash
+      DATABASE_NAME=your_database_name
+      DATABASE_USER=your_username
+      DATABASE_PASSWORD=your_password
+      DB_KEY=your_32byte_key
+   ```
 6. Run the Django server:
    ```bash
    python manage.py runserver
