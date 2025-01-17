@@ -33,8 +33,8 @@ function Voting() {
         const encryptedUserID = encrypt(userID);
         const encryptedChoice = encrypt(party);
 
-        console.log(`(encrypted: user ID ${userID}) voted for ${party}`); // just to see the data in the console
-        console.log(`(encrypted: user ID ${encryptedUserID}) voted for ${encryptedChoice}`); // encrypted data
+        console.log(`not encrypted: user ID ${userID} voted for ${party}`); // just to see the data in the console
+        console.log(`encrypted: user ID ${encryptedUserID} voted for ${encryptedChoice}`); // encrypted data
 
         axios.post('http://localhost:8000/vote', { 
             voter_id: encryptedUserID,

@@ -95,6 +95,10 @@
     color: #f1f1f1;
     font-weight: bold;
 }
+.endResults{
+  background-color: #f9f9f9;
+  width: 90vh;
+}
 
 
   @media (max-width: 768px) {

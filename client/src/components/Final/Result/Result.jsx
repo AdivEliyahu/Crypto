@@ -49,7 +49,10 @@ function Result() {
             <Box sx={{ width: '100vh', height: '10px', mt: 3}}>
             <LinearProgress color="inherit"/>
             </Box>
-        </div>) : ( YetVoted !== 0 ?
+        </div>) :
+        
+        (
+            <>
         <div className="container"> 
                 <IconButton
                     onClick={() => nav('/')} 
@@ -77,34 +80,26 @@ function Result() {
 
             />
             </div>
-        </div>: 
-        
+            
+        </div>
+        {YetVoted === 0 &&
         <div className="endResults">
-            <IconButton
-                    onClick={() => nav('/')} 
-                    style={{
-                        position: 'fixed', 
-                        top: '20px',
-                        left: '20px',
-                        color: '#495057', 
-                        zIndex: 10, 
-                }}
-            >
-                <HomeIcon fontSize="large" />
-            </IconButton>
         <h1>Final Results</h1>
         <h1>The Winner is {Democrats > Republicans ? 'Democrats' : 'Republicans'}</h1>
         <div className="results">
-            <div className="result dem">
-                <h3>Democrats</h3>
-                <h4>{Democrats}</h4>
-            </div>
-            <div className="result rep">
-                <h3>Republicans</h3>
-                <h4>{Republicans}</h4>
-            </div>
+            {Democrats > Republicans ? (<div className="result dem">
+                <h3>Democrats Won!</h3>
+                <h4>with {Democrats} votes</h4>
+            </div>) :
+            (<div className="result rep">
+                <h3>Republicans Won!</h3>
+                <h4> with {Republicans} votes</h4>
+            </div>)}
         </div>
-    </div>)
+    </div>}
+       
+    </>
+)
     );
     }
 

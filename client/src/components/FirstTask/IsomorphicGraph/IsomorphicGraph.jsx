@@ -17,7 +17,7 @@ const IsomorphicGraph = (props) => {
     const [filledId, setFilledId] = useState(null);
     const [userStatus, setUserStatus] = useState(null);
     const [userStatusMessage, setUserStatusMessage] = useState(null);
-    const [isSubmitted, setIsSubmitted] = useState(false); // Added state variable
+    const [isSubmitted, setIsSubmitted] = useState(false); 
 
     const [isLoaded, setIsLoaded] = useState(false); 
     const nav = useNavigate(); 
@@ -27,7 +27,7 @@ const IsomorphicGraph = (props) => {
     },[props]);
 
     useEffect(() => {
-        if (!isSubmitted) return; // Added condition
+        if (!isSubmitted) return; 
         axios.get('http://localhost:8000/get_graphs')
             .then((response) => {
                 setNodes1(response.data["nodes1"]);
@@ -39,7 +39,7 @@ const IsomorphicGraph = (props) => {
             .catch((error) => {
                 console.log("API error:", error);
             });
-    }, [isSubmitted]); // Changed dependency
+    }, [isSubmitted]); 
 
     const encrypt = (text) => {
         if (!sessionStorage.getItem('sharedSecret')) {
@@ -58,7 +58,7 @@ const IsomorphicGraph = (props) => {
     const filledIdEncrypted = encrypt(filledId);
 
     useEffect(() => {
-        if (!isSubmitted || !filledIdEncrypted) return; // Added condition
+        if (!isSubmitted || !filledIdEncrypted) return; 
         axios.post('http://localhost:8000/valid_user', {
             voter_id: filledIdEncrypted,
         })
@@ -70,7 +70,7 @@ const IsomorphicGraph = (props) => {
             .catch((error) => {
                 console.log("API error:", error);
             });
-    }, [isSubmitted, filledIdEncrypted]); // Changed dependency
+    }, [isSubmitted, filledIdEncrypted]); 
 
     return (
         <div>
